@@ -1,0 +1,6 @@
+[submodule "RocketSim"]
+	path = RocketSim
+	url = https://github.com/ZealanL/RocketSim
+[submodule "pybind11"]
+	path = pybind11
+	url = https://github.com/pybind/pybind11/

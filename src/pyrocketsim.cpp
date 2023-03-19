@@ -1,8 +1,10 @@
 #include <string>
+#include <filesystem>
 #include <pybind11/stl.h>
 #include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/operators.h>
+#include <pybind11/functional.h>
 #include "../RocketSim/src/RocketSim.h"
 
 namespace py = pybind11;
@@ -381,7 +383,26 @@ PYBIND11_MODULE(pyrocketsim, m) {
             py::return_value_policy::reference)
         .def("remove_car", &Arena::RemoveCar, "car"_a)
         .def("get_car_from_id", &Arena::GetCarFromID, "id"_a)
+
+        .def("set_goal_score_call_back", [](Arena& arena, pybind11::function callback_fn) {
+            GoalScoreEventFn callback = [callback_fn](Arena* arena,
+                Team scoringTeam, void* userInfo) {
+                callback_fn(arena, scoringTeam);
+            };
+            arena.SetGoalScoreCallback(callback);
+        })
+
+        .def("write_to_file", [](Arena &arena, std::string path_str) {
+            const std::filesystem::path path = std::filesystem::u8path(path_str);
+            arena.WriteToFile(path);
+        }, "path_str"_a)
+
+        .def_static("load_from_file", [](std::string path_str) {
+            const std::filesystem::path path = std::filesystem::u8path(path_str);
+            return Arena::LoadFromFile(path);
+        }, "path_str"_a, py::return_value_policy::reference)
+
         .def("step", &Arena::Step)
-        .def("reset_to_random_kickoff", &Arena::ResetToRandomKickoff, "seed"_a = -1)
-        ;
+        .def("clone", &Arena::Clone, "copy_callbacks"_a)
+        .def("reset_to_random_kickoff", &Arena::ResetToRandomKickoff, "seed"_a = -1);
 }

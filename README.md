@@ -23,10 +23,11 @@ tick_rate = 120
 arena = RS.Arena(RS.SOCCAR, tick_rate)
 print(f"Arena tick rate: {arena.tick_rate}")
 
+
 # setup ball initial state
 ball_state = arena.ball.get_state()
-ball_state.pos = RS.Vec(500, 500, 1500)
-ball_state.vel = RS.Vec(0, 0, 0.1)  # A ball with 0 vel will not fall
+ball_state.pos = RS.Vec(0, 0, 500)
+ball_state.vel = RS.Vec(0, -6000, 0)  # A ball with 0 vel will not fall
 arena.ball.set_state(ball_state)
 print("Set ball state")
 
@@ -48,13 +49,23 @@ car_controls = RS.CarControls(throttle=1, pitch=-1)
 car.set_controls(car_controls)
 
 # do any number of steps
-arena.step(8)
+arena.step(6)
 
 # some classes have custom __format__ functions
 car_state = car.get_state()
 print(f"{car_state.last_controls = }")
 print(f"{car_state.pos = :.2f}")
 print(f"{car_state.rot_mat = :.2f}")
+
+# there's some helper functions
+arena.set_goal_score_call_back(lambda arena, team: print(f"{team} scored!"))
+arena.step(100)
+
+old_arena = arena.clone(copy_callbacks=False)
+old_arena.write_to_file("arena_file_path")
+same_old_arena = RS.Arena.load_from_file("arena_file_path")
+
+arena.reset_to_random_kickoff()
 ```
 
 If you want an idea of what's included in the bindings you can either read the [source code](https://github.com/uservar/pyrocketsim/blob/main/src/pyrocketsim.cpp) or [pydoc pyrocketsim](https://gist.github.com/uservar/95bdfef383f691181883ddb2615be443).

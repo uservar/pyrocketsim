@@ -240,7 +240,23 @@ PYBIND11_MODULE(pyrocketsim, m) {
         });
 
     py::class_<CarControls>(m, "CarControls")
-        .def(py::init<>())
+        .def(py::init([](float throttle, float steer,
+            float pitch, float yaw, float roll,
+            bool boost, bool jump, bool handbrake) {
+            CarControls controls = CarControls();
+            controls.throttle = throttle;
+            controls.steer = steer;
+            controls.pitch = pitch;
+            controls.yaw = yaw;
+            controls.roll = roll;
+            controls.boost = boost;
+            controls.jump = jump;
+            controls.handbrake = handbrake;
+            return controls;
+        }),
+        "throttle"_a = 0, "steer"_a = 0, "pitch"_a = 0, "yaw"_a = 0, "roll"_a = 0,
+        "boost"_a = false, "jump"_a = false, "handbrake"_a = false)
+
         .def_readwrite("throttle", &CarControls::throttle)
         .def_readwrite("steer", &CarControls::steer)
         .def_readwrite("pitch", &CarControls::pitch)

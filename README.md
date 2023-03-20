@@ -17,6 +17,8 @@ Note: As a limitation of using pybind, binaries will only work with the specific
 ```py
 import pyrocketsim as RS
 
+# Initialize RocketSim (loads arena collision meshes, etc.)
+RS.init()
 
 # setup rocketsim arena
 tick_rate = 120

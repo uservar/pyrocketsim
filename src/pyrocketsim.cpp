@@ -13,6 +13,8 @@ using namespace pybind11::literals;
 
 PYBIND11_MODULE(pyrocketsim, m) {
 
+    m.def("init", &RocketSim::Init);
+
     py::class_<Vec>(m, "Vec")
 
         .def(py::init<float, float, float>(), "x"_a = 0, "y"_a = 0, "z"_a = 0)
@@ -30,6 +32,8 @@ PYBIND11_MODULE(pyrocketsim, m) {
         .def("cross", &Vec::Cross, "other"_a)
         .def("dist_sq", &Vec::DistSq, "other"_a)
         .def("dist", &Vec::Dist, "other"_a)
+        .def("dist_sq_2d", &Vec::DistSq2D, "other"_a)
+        .def("dist_2d", &Vec::Dist2D, "other"_a)
         .def("normalized", &Vec::Normalized)
 
         .def("__getitem__", [](Vec &vec, uint32_t index) {
@@ -43,6 +47,9 @@ PYBIND11_MODULE(pyrocketsim, m) {
                 vec[index] = val;
             else throw py::index_error("list index out of range");
         })
+
+        .def(py::self < py::self)
+        .def(py::self > py::self)
 
         .def(py::self + py::self)
         .def(py::self - py::self)
@@ -198,9 +205,9 @@ PYBIND11_MODULE(pyrocketsim, m) {
 
     py::class_<BoostPad>(m, "BoostPad")
         .def_readonly("is_big", &BoostPad::isBig)
+        .def_readonly("pos", &BoostPad::pos)
         .def("get_state", &BoostPad::GetState)
-        .def("set_state", &BoostPad::SetState, "boost_pad_state"_a)
-        .def("get_pos", &BoostPad::GetPos);
+        .def("set_state", &BoostPad::SetState, "boost_pad_state"_a);
 
     py::class_<BallState>(m, "BallState")
         .def(py::init<>())

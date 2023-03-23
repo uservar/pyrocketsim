@@ -1,25 +1,190 @@
-#include <string>
-#include <filesystem>
-#include <pybind11/stl.h>
-#include <pybind11/numpy.h>
-#include <pybind11/pybind11.h>
-#include <pybind11/operators.h>
-#include <pybind11/functional.h>
+#include <vector>
+#include <string.h>
+#include <boost/python.hpp>
+#include <boost/format.hpp>
+#include <boost/python/numpy.hpp>
+#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
+
 #include "../RocketSim/src/RocketSim.h"
 
-namespace py = pybind11;
-using namespace pybind11::literals;
+using namespace boost::python;
+namespace np = numpy;
 
 
-PYBIND11_MODULE(pyrocketsim, m) {
+// Vec
+float VecGetItem(const Vec& vec, uint32_t index) {
+    if (index < 0 || index > 2) {
+        PyErr_SetString(PyExc_IndexError, "index out of range");
+        throw_error_already_set();
+    }
+    return vec[index];
+}
 
-    m.def("init", &RocketSim::Init);
+float VecSetItem(Vec& vec, uint32_t index, float value) {
+    if (index < 0 || index > 2) {
+        PyErr_SetString(PyExc_IndexError, "index out of range");
+        throw_error_already_set();
+    }
+    return vec[index] = value;
+}
 
-    py::class_<Vec>(m, "Vec")
+tuple VecAsTuple(const Vec& vec) {
+    return make_tuple(vec.x, vec.y, vec.z);
+}
 
-        .def(py::init<float, float, float>(), "x"_a = 0, "y"_a = 0, "z"_a = 0)
-        //The _a suffix forms a C++11 literal which is equivalent to py::arg()
+np::ndarray VecAsNumpy(const Vec& vec) {
+    np::ndarray arr = np::zeros(make_tuple(3), np::dtype::get_builtin<float>());
+    float* data = reinterpret_cast<float*>(arr.get_data());
+    data[0] = vec.x;
+    data[1] = vec.y;
+    data[2] = vec.z;
+    return arr;
+}
 
+object VecFormat(const Vec& vec, const char* spec = "") {
+    return str("[{1:{0}}, {2:{0}}, {3:{0}}]").attr("format")(
+        spec, vec.x, vec.y, vec.z);
+}
+
+
+// RotMat
+Vec RotMatGetItem(const RotMat& mat, uint32_t index) {
+    if (index < 0 || index > 2) {
+        PyErr_SetString(PyExc_IndexError, "index out of range");
+        throw_error_already_set();
+    }
+    return mat[index];
+}
+
+Vec RotMatSetItem(RotMat& mat, uint32_t index, Vec vec) {
+    if (index < 0 || index > 2) {
+        PyErr_SetString(PyExc_IndexError, "index out of range");
+        throw_error_already_set();
+    }
+    return mat[index] = vec;
+}
+
+object RotMatFormat(const RotMat& mat, const char* spec = "") {
+    return str("(FRU) [\n {1:{0}},\n {2:{0}},\n {3:{0}}]").attr("format")(
+        spec, mat.forward, mat.right, mat.up);
+}
+
+np::ndarray RotMatAsNumpy(const RotMat& mat) {
+    np::ndarray arr = np::zeros(make_tuple(3, 3), np::dtype::get_builtin<float>());
+    float* data = reinterpret_cast<float*>(arr.get_data());
+    data[0] = mat.forward.x;
+    data[1] = mat.forward.y;
+    data[2] = mat.forward.z;
+    data[3] = mat.right.x;
+    data[4] = mat.right.y;
+    data[5] = mat.right.z;
+    data[6] = mat.up.x;
+    data[7] = mat.up.y;
+    data[8] = mat.up.z;
+    return arr;
+}
+
+// Angle
+tuple AngleAsTuple(const Angle& ang) {
+    return make_tuple(ang.yaw, ang.pitch, ang.roll);
+}
+
+np::ndarray AngleAsNumpy(const Angle& ang) {
+    np::ndarray arr = np::zeros(make_tuple(3), np::dtype::get_builtin<float>());
+    float* data = reinterpret_cast<float*>(arr.get_data());
+    data[0] = ang.yaw;
+    data[1] = ang.pitch;
+    data[2] = ang.roll;
+    return arr;
+}
+
+object AngleFormat(const Angle& ang, const char* spec = "") {
+    return str("[{1:{0}}, {2:{0}}, {3:{0}}]").attr("format")(
+        spec, ang.yaw, ang.pitch, ang.roll);
+}
+
+// BoostPadState
+object BoostPadStateFormat(const BoostPadState& bps, const char* spec = "") {
+    return str("{{is_active: {},\n cooldown: {}}}").attr("format")(
+        spec, bps.isActive, bps.cooldown);
+}
+
+// Ball
+float BallGetRadius(Ball& ball) {
+    return ball.GetRadius() * 50;
+}
+
+
+// WorldContact
+object WorldContactFormat(const decltype(CarState::worldContact)& wc, const char* spec = "") {
+    return str("{{has_contact: {1},\n contact_normal: {2:{0}}}}").attr("format")(
+        spec, wc.hasContact, wc.contactNormal);
+}
+
+// CarContact
+object CarContactFormat(const decltype(CarState::carContact)& cc, const char* spec = "") {
+    return str("{{other_car_id: {1},\n cooldown_timer: {2:{0}}}}").attr("format")(
+        spec, cc.otherCarID, cc.cooldownTimer);
+}
+
+// CarControls
+object CarControlsFormat(const CarControls& carControls, const char* spec = "") {
+    std::string format_str = "{{throttle: {1:{0}},\n steer: {2:{0}},";
+    format_str += "\n pitch: {3:{0}},\n yaw: {4:{0}},\n roll: {5:{0}},\n ";
+    format_str += "boost: {6},\n jump: {7},\n powerslide: {8}}}";
+    return str(format_str).attr("format")(spec, carControls.throttle, carControls.steer,
+                carControls.pitch, carControls.yaw, carControls.roll,
+                carControls.boost, carControls.jump, carControls.handbrake);
+}
+
+// CarState
+Angle CarStateGetAngle(const CarState &car_state) {
+    return Angle().FromRotMat(car_state.rotMat);
+}
+
+// Car
+CarConfig CarGetConfig(const Car &car) {
+    return car.config;
+}
+
+CarControls CarGetControls(const Car &car) {
+    return car.controls;
+}
+
+void CarSetControls(Car &car, CarControls &carControls) {
+    car.controls = carControls;
+}
+
+// Arena
+Ball* ArenaGetBall(Arena &arena) {
+    return arena.ball;
+}
+
+void ArenaSetGoalScoreCallback(Arena& self, object pyCallback) {
+    GoalScoreEventFn callbackFn = [pyCallback](Arena* arena, Team scoringTeam, void*) {
+        pyCallback(ptr(arena), scoringTeam);
+    };
+    self.SetGoalScoreCallback(callbackFn);
+}
+
+void ArenaWriteToFile(Arena &arena, std::string path_str) {
+    const std::filesystem::path path = std::filesystem::u8path(path_str);
+    arena.WriteToFile(path);
+}
+
+Arena* ArenaLoadFromFile(std::string path_str) {
+    const std::filesystem::path path = std::filesystem::u8path(path_str);
+    return Arena::LoadFromFile(path);
+}
+
+BOOST_PYTHON_MODULE(pyrocketsim) {
+
+    Py_Initialize();
+    np::initialize();
+
+    def("init", &RocketSim::Init);
+
+    class_<Vec>("Vec", init<float, float, float>((arg("x")=0, arg("y")=0, arg("z")=0)))
         .def_readwrite("x", &Vec::x)
         .def_readwrite("y", &Vec::y)
         .def_readwrite("z", &Vec::z)
@@ -28,244 +193,137 @@ PYBIND11_MODULE(pyrocketsim, m) {
         .def("length_sq", &Vec::LengthSq)
         .def("length", &Vec::Length)
         .def("length", &Vec::Length)
-        .def("dot", &Vec::Dot, "other"_a)
-        .def("cross", &Vec::Cross, "other"_a)
-        .def("dist_sq", &Vec::DistSq, "other"_a)
-        .def("dist", &Vec::Dist, "other"_a)
-        .def("dist_sq_2d", &Vec::DistSq2D, "other"_a)
-        .def("dist_2d", &Vec::Dist2D, "other"_a)
+        .def("dot", &Vec::Dot, arg("other"))
+        .def("cross", &Vec::Cross, arg("other"))
+        .def("dist_sq", &Vec::DistSq, arg("other"))
+        .def("dist", &Vec::Dist, arg("other"))
+        .def("dist_sq_2d", &Vec::DistSq2D, arg("other"))
+        .def("dist_2d", &Vec::Dist2D, arg("other"))
         .def("normalized", &Vec::Normalized)
+        .def("__getitem__", &VecGetItem)
+        .def("__setitem__", &VecSetItem)
 
-        .def("__getitem__", [](Vec &vec, uint32_t index) {
-            if (0 <= index && index < 3)
-                return vec[index];
-            throw py::index_error("list index out of range");
-        })
+        .def(self < self)
+        .def(self > self)
 
-        .def("__setitem__", [](Vec &vec, uint32_t index, float val) {
-            if (0 <= index && index < 3)
-                vec[index] = val;
-            else throw py::index_error("list index out of range");
-        })
+        .def(self + self)
+        .def(self - self)
+        .def(self * self)
+        .def(self / self)
 
-        .def(py::self < py::self)
-        .def(py::self > py::self)
-
-        .def(py::self + py::self)
-        .def(py::self - py::self)
-        .def(py::self * py::self)
-        .def(py::self / py::self)
-
-        .def(py::self += py::self)
-        .def(py::self -= py::self)
-        .def(py::self *= py::self)
-        .def(py::self /= py::self)
+        .def(self += self)
+        .def(self -= self)
+        .def(self *= self)
+        .def(self /= self)
 
         // some operators were not defined in RocketSim at the time of writing this
-        .def(py::self * float())
-        .def(py::self / float())
+        .def(self * float())
+        .def(self / float())
 
-        .def(py::self *= float())
-        .def(py::self /= float())
+        .def(self *= float())
+        .def(self /= float())
 
-        .def(-py::self)
+        .def(-self)
 
-        .def("as_tuple", [](const Vec &vec) {
-            return py::make_tuple(vec.x, vec.y, vec.z);
-        })
+        .def("as_tuple", &VecAsTuple)
+        .def("as_numpy", &VecAsNumpy)
 
-        .def("as_numpy", [](const Vec &vec) {
-            py::array_t<float> arr({3});
-            auto buf = arr.mutable_data();
-            buf[0] = vec.x;
-            buf[1] = vec.y;
-            buf[2] = vec.z;
-            return arr;
-        })
+        .def("__format__", &VecFormat, arg("spec"))
+        .def("__str__", &VecFormat, arg("spec")="")
+        .def("__repr__", &VecFormat, arg("spec")="");
+    
+    class_<RotMat>("RotMat", init<>())
+        .def(init<Vec, Vec, Vec>((arg("forward"), arg("right"), arg("up"))))
 
-        .def("__format__", [](const Vec& vec, const char* spec) {
-            return py::str("[{1:{0}}, {2:{0}}, {3:{0}}]").format(spec,
-                vec.x, vec.y, vec.z);
-        })
+        .def("get_identity", &RotMat::GetIdentity)  // static
 
-        .def("__str__", [](const Vec &vec) {
-            return py::str("[{}, {}, {}]").format(vec.x, vec.y, vec.z);
-        })
+        .def("__getitem__", &RotMatGetItem)
+        .def("__setitem__", &RotMatSetItem)
 
-        .def("__repr__", [](const Vec &vec) {
-            return py::str("<Vec: {}>").format(vec);
-        });
+        .def(self + self)
+        .def(self - self)
 
-    py::class_<RotMat>(m, "RotMat")
-        .def(py::init<>())
-        .def(py::init<Vec, Vec, Vec>(), "forward"_a, "right"_a, "up"_a)
-        .def_static("get_identity", &RotMat::GetIdentity)
+        .def(self * float())
+        .def(self / float())
 
-        .def("__getitem__", [](RotMat &mat, int index) {
-            if (0 <= index && index < 3)
-                return mat[index];
-            throw py::index_error("list index out of range");
-        })
+        .def(self *= float())
+        .def(self /= float())
 
-        .def("__setitem__", [](RotMat &mat, uint32_t index, Vec &vec) {
-            if (0 <= index && index < 3)
-                mat[index] = vec;
-            else throw py::index_error("list index out of range");
-        })
-
-        .def(py::self + py::self)
-        .def(py::self - py::self)
-
-        .def(py::self * float())
-        .def(py::self / float())
-
-        .def(py::self *= float())
-        .def(py::self /= float())
-
-        .def("dot", &RotMat::Dot, "vec"_a)
+        .def("dot", &RotMat::Dot, arg("vec"))
         .def("transpose", &RotMat::Transpose)
 
-        .def("as_numpy", [](const RotMat &mat) {
-            py::array_t<float> arr({3, 3});
-            auto buf = arr.mutable_data();
-            buf[0] = mat.forward.x;
-            buf[1] = mat.forward.y;
-            buf[2] = mat.forward.z;
-            buf[3] = mat.right.x;
-            buf[4] = mat.right.y;
-            buf[5] = mat.right.z;
-            buf[6] = mat.up.x;
-            buf[7] = mat.up.y;
-            buf[8] = mat.up.z;
-            return arr;
-        })
+        .def("as_numpy", &RotMatAsNumpy)
 
-        .def("__format__", [](const RotMat& mat, const char* spec) {
-            return py::str("(FRU) [\n {1:{0}},\n {2:{0}},\n {3:{0}}]").format(spec,
-                mat.forward, mat.right, mat.up);
-        })
+        .def("__format__", &RotMatFormat, arg("spec")="")
+        .def("__str__", &RotMatFormat, arg("spec")="")
+        .def("__repr__", &RotMatFormat, arg("spec")="");
 
-        .def("__str__", [](const RotMat &mat) {
-            return py::str("{}").format(mat);
-        })
-
-        .def("__repr__", [](const RotMat &mat) {
-            return py::str("<RotMat: {}>").format(mat);
-        });
-
-    py::class_<Angle>(m, "Angle")
-        .def(py::init<float, float, float>(), "yaw"_a = 0, "pitch"_a = 0, "roll"_a = 0)
+    class_<Angle>("Angle",
+        init<float, float, float>((arg("yaw")=0, arg("pitch")=0, arg("roll")=0)))
 
         .def_readwrite("yaw", &Angle::yaw)
         .def_readwrite("pitch", &Angle::pitch)
         .def_readwrite("roll", &Angle::roll)
 
-        .def_static("from_rot_mat", &Angle::FromRotMat, "rot_mat"_a)
+        .def("from_rot_mat", &Angle::FromRotMat, arg("rot_mat"))  // static
         .def("to_rot_mat", &Angle::ToRotMat)
         .def("get_forward_vector", &Angle::GetForwardVector)
         .def("normalize_fix", &Angle::NormalizeFix)
 
-        .def("as_tuple", [](const Angle &ang) {
-            return py::make_tuple(ang.yaw, ang.pitch, ang.roll);
-        })
+        .def("as_tuple", &AngleAsTuple)
+        .def("as_numpy", &AngleAsNumpy)
 
-        .def("as_numpy", [](const Angle &ang) {
-            py::array_t<float> arr({3});
-            auto buf = arr.mutable_data();
-            buf[0] = ang.yaw;
-            buf[1] = ang.pitch;
-            buf[2] = ang.roll;
-            return arr;
-        })
+        .def("__format__", &AngleFormat, arg("spec")="")
+        .def("__str__", &AngleFormat, arg("spec")="")
+        .def("__repr__", &AngleFormat, arg("spec")="");
 
-        .def("__format__", [](const Angle &ang, const char* spec) {
-            return py::str("(YPR) [{1:{0}}, {2:{0}}, {3:{0}}]").format(spec,
-                ang.yaw, ang.pitch, ang.roll);
-        })
-
-        .def("__str__", [](const Angle &ang) {
-            return py::str("{}").format(ang);
-        })
-
-        .def("__repr__", [](const Angle &ang) {
-            return py::str("<Angle: {}>").format(ang);
-        });
-
-    py::class_<BoostPadState>(m, "BoostPadState")
-        .def(py::init<>())
+    class_<BoostPadState>("BoostPadState", init<>())
         .def_readwrite("is_active", &BoostPadState::isActive)
         .def_readwrite("cooldown", &BoostPadState::cooldown)
-        .def("__str__", [](const BoostPadState &padState) {
-            return py::str("{{is_active: {},\n cooldown: {}}}").format(
-                padState.isActive, padState.cooldown);
-        })
-        .def("__repr__", [](const BoostPadState &padState) {
-            return py::str("<BoostPadState: {}>").format(padState);
-        });
+        .def("__format__", &BoostPadStateFormat, arg("spec")="")
+        .def("__str__", &BoostPadStateFormat, arg("spec")="")
+        .def("__repr__", &BoostPadStateFormat, arg("spec")="");
 
-    py::class_<BoostPad>(m, "BoostPad")
+    class_<BoostPad>("BoostPad", no_init)
         .def_readonly("is_big", &BoostPad::isBig)
         .def_readonly("pos", &BoostPad::pos)
         .def("get_state", &BoostPad::GetState)
-        .def("set_state", &BoostPad::SetState, "boost_pad_state"_a);
+        .def("set_state", &BoostPad::SetState, arg("boost_pad_state"));
 
-    py::class_<BallState>(m, "BallState")
-        .def(py::init<>())
+    register_ptr_to_python<BoostPad*>();
+
+    class_<std::vector<BoostPad*> >("BoostPadVector")
+        .def(vector_indexing_suite<std::vector<BoostPad*>>());
+
+    class_<BallState>("BallState", init<>())
         .def_readwrite("pos", &BallState::pos)
         .def_readwrite("vel", &BallState::vel)
-        .def_readwrite("ang_vel", &BallState::angVel);  
+        .def_readwrite("ang_vel", &BallState::angVel);
 
-    py::class_<Ball>(m, "Ball")
+    class_<Ball, boost::noncopyable>("Ball", no_init)
         .def("get_state", &Ball::GetState)
-        .def("set_state", &Ball::SetState, "ball_state"_a)
-        .def("get_radius", [](Ball &ball) {return ball.GetRadius() * 50;});
+        .def("set_state", &Ball::SetState, arg("ball_state"))
+        .def("get_radius", &BallGetRadius);
 
-    py::class_<decltype(CarState::worldContact)>(m, "WorldContact")
+    register_ptr_to_python<Ball*>();
+
+    class_<decltype(CarState::worldContact)>("WorldContact", no_init)
         .def_readwrite("has_contact", &decltype(CarState::worldContact)::hasContact)
         .def_readwrite("contact_normal", &decltype(CarState::worldContact)::contactNormal)
-        .def("__format__", [](const decltype(CarState::worldContact) &worldContact, const char* spec) {
-            return py::str("{{has_contact: {1},\n contact_normal: {2:{0}}}}").format(spec,
-                worldContact.hasContact, worldContact.contactNormal);
-        })
-        .def("__str__", [](const decltype(CarState::worldContact) &worldContact) {
-            return py::str("{}").format(worldContact);
-        })
-        .def("__repr__", [](const decltype(CarState::worldContact) &worldContact) {
-            return py::str("<WorldContact: {}>").format(worldContact);
-        });
+        .def("__format__", &WorldContactFormat, arg("spec")="")
+        .def("__str__", &WorldContactFormat, arg("spec")="")
+        .def("__repr__", &WorldContactFormat, arg("spec")="");
 
-    py::class_<decltype(CarState::carContact)>(m, "CarContact")
+    class_<decltype(CarState::carContact)>("CarContact", no_init)
         .def_readwrite("other_car_id", &decltype(CarState::carContact)::otherCarID)
         .def_readwrite("cooldown_timer", &decltype(CarState::carContact)::cooldownTimer)
-        .def("__format__", [](const decltype(CarState::carContact) &carContact, const char* spec) {
-            return py::str("{{other_car_id: {1},\n cooldown_timer: {2:{0}}}}").format(spec,
-                carContact.otherCarID, carContact.cooldownTimer);
-        })
-        .def("__str__", [](const decltype(CarState::carContact) &carContact) {
-            return py::str("{}").format(carContact);
-        })
-        .def("__repr__", [](const decltype(CarState::carContact) &carContact) {
-            return py::str("<CarContact: {}>").format(carContact);
-        });
+        .def("__format__", &CarContactFormat, arg("spec")="")
+        .def("__str__", &CarContactFormat, arg("spec")="")
+        .def("__repr__", &CarContactFormat, arg("spec")="");
 
-    py::class_<CarControls>(m, "CarControls")
-        .def(py::init([](float throttle, float steer,
-            float pitch, float yaw, float roll,
-            bool boost, bool jump, bool handbrake) {
-            CarControls controls = CarControls();
-            controls.throttle = throttle;
-            controls.steer = steer;
-            controls.pitch = pitch;
-            controls.yaw = yaw;
-            controls.roll = roll;
-            controls.boost = boost;
-            controls.jump = jump;
-            controls.handbrake = handbrake;
-            return controls;
-        }),
-        "throttle"_a = 0, "steer"_a = 0, "pitch"_a = 0, "yaw"_a = 0, "roll"_a = 0,
-        "boost"_a = false, "jump"_a = false, "handbrake"_a = false)
+    implicitly_convertible<CarControls, boost::python::object>();
 
+    class_<CarControls>("CarControls")
         .def_readwrite("throttle", &CarControls::throttle)
         .def_readwrite("steer", &CarControls::steer)
         .def_readwrite("pitch", &CarControls::pitch)
@@ -276,35 +334,18 @@ PYBIND11_MODULE(pyrocketsim, m) {
         .def_readwrite("handbrake", &CarControls::handbrake)
         .def("clamp_fix", &CarControls::ClampFix)
 
-        .def("__format__", [](const CarControls &carControls, const char* spec) {
-            std::string format_str = "{{throttle: {1:{0}},\n steer: {2:{0}},";
-            format_str += "\n pitch: {3:{0}},\n yaw: {4:{0}},\n roll: {5:{0}},\n ";
-            format_str += "boost: {6},\n jump: {7},\n powerslide: {8}}}";
-            return py::str(format_str).format(spec,
-                carControls.throttle, carControls.steer,
-                carControls.pitch, carControls.yaw, carControls.roll,
-                carControls.boost, carControls.jump, carControls.handbrake);
-        })
+        .def("__format__", &CarControlsFormat, arg("spec")="")
+        .def("__str__", &CarControlsFormat, arg("spec")="")
+        .def("__repr__", &CarControlsFormat, arg("spec")="");
 
-        .def("__str__", [](const CarControls &carControls) {
-            return py::str("{}").format(carControls);
-        })
-
-        .def("__repr__", [](const CarControls &carControls) {
-            return py::str("<CarControls: {}>").format(carControls);
-        });
-
-    py::class_<CarState>(m, "CarState")
-        .def(py::init<>())
+    class_<CarState>("CarState")
         .def_readwrite("pos", &CarState::pos)
         .def_readwrite("rot_mat", &CarState::rotMat)
         .def_readwrite("vel", &CarState::vel)
         .def_readwrite("ang_vel", &CarState::angVel)
-        
-        .def_property_readonly("angles", [](const CarState &car_state) {
-            return Angle().FromRotMat(car_state.rotMat);
-        })
-        
+
+        .add_property("angles", &CarStateGetAngle)
+
         .def_readwrite("is_on_ground", &CarState::isOnGround)
         .def_readwrite("has_jumped", &CarState::hasJumped)
         .def_readwrite("has_double_jumped", &CarState::hasDoubleJumped)
@@ -322,94 +363,99 @@ PYBIND11_MODULE(pyrocketsim, m) {
         .def_readwrite("is_auto_flipping", &CarState::isAutoFlipping)
         .def_readwrite("auto_flip_timer", &CarState::autoFlipTimer)
         .def_readwrite("auto_flip_torque_scale", &CarState::autoFlipTorqueScale)
-        
+
         .def_readwrite("world_contact", &CarState::worldContact)
         .def_readwrite("car_contact", &CarState::carContact)
-        
+
         .def_readwrite("is_demoed", &CarState::isDemoed)
         .def_readwrite("demo_respawn_timer", &CarState::demoRespawnTimer)
         .def_readwrite("last_hit_ball_tick", &CarState::lastHitBallTick)
-        
+
         .def_readwrite("last_controls", &CarState::lastControls);
 
-    py::enum_<Team>(m, "Team")
+    enum_<Team>("Team")
         .value("BLUE", Team::BLUE)
         .value("ORANGE", Team::ORANGE)
         .export_values();
 
-    py::class_<WheelPairConfig>(m, "WheelPairConfig")
-        .def(py::init<>())
+    class_<WheelPairConfig>("WheelPairConfig")
         .def_readwrite("wheel_radius", &WheelPairConfig::wheelRadius)
         .def_readwrite("suspension_rest_length", &WheelPairConfig::suspensionRestLength)
         .def_readwrite("connection_point_offset", &WheelPairConfig::connectionPointOffset);
 
-    py::class_<CarConfig>(m, "CarConfig")
-        .def(py::init<>())
+    class_<CarConfig>("CarConfig")
         .def_readwrite("hitbox_size", &CarConfig::hitboxSize)
         .def_readwrite("hitbox_pos_offset", &CarConfig::hitboxPosOffset)
         .def_readwrite("front_wheels", &CarConfig::frontWheels)
         .def_readwrite("back_wheels", &CarConfig::backWheels)
         .def_readwrite("dodge_deadzone", &CarConfig::dodgeDeadzone);
 
-    m.attr("OCTANE") = &CAR_CONFIG_OCTANE;
-    m.attr("DOMINUS") = &CAR_CONFIG_DOMINUS;
-    m.attr("PLANK") = &CAR_CONFIG_PLANK;
-    m.attr("BREAKOUT") = &CAR_CONFIG_BREAKOUT;
-    m.attr("HYBRID") = &CAR_CONFIG_HYBRID;
-    m.attr("MERC") = &CAR_CONFIG_MERC;
+    scope().attr("OCTANE") = &CAR_CONFIG_OCTANE;
+    scope().attr("DOMINUS") = &CAR_CONFIG_DOMINUS;
+    scope().attr("PLANK") = &CAR_CONFIG_PLANK;
+    scope().attr("BREAKOUT") = &CAR_CONFIG_BREAKOUT;
+    scope().attr("HYBRID") = &CAR_CONFIG_HYBRID;
+    scope().attr("MERC") = &CAR_CONFIG_MERC;
 
-    py::class_<Car>(m, "Car")
-        .def("get_config", [](const Car &car) {return car.config;})
+    class_<Car, boost::noncopyable>("Car", no_init)
+        .def("get_config", &CarGetConfig)
         .def_readonly("team", &Car::team)
         .def_readonly("id", &Car::id)
-        .def("get_controls", [](const Car &car) {return car.controls;})
-        .def("set_controls", [](Car &car, CarControls &controls) {
-            car.controls = controls; }, "car_controls"_a)
+        .def("get_controls", &CarGetControls)
+        .def("set_controls", &CarSetControls)
         .def("get_state", &Car::GetState)
-        .def("set_state", &Car::SetState, "car_state"_a)
+        .def("set_state", &Car::SetState, arg("car_state"))
         .def("demolish", &Car::Demolish)
-        .def("respawn", &Car::Respawn, "seed"_a = -1)
-        .def_property_readonly("forward_dir", &Car::GetForwardDir)
-        .def_property_readonly("right_dir", &Car::GetRightDir)
-        .def_property_readonly("up_dir", &Car::GetUpDir);
+        .def("respawn", &Car::Respawn, arg("seed")=-1)
+        .add_property("forward_dir", &Car::GetForwardDir)
+        .add_property("right_dir", &Car::GetRightDir)
+        .add_property("up_dir", &Car::GetUpDir);
 
-    py::enum_<GameMode>(m, "GameMode")
+    register_ptr_to_python<Car*>();
+
+    class_<std::vector<Car*> >("CarVector")
+        .def(vector_indexing_suite<std::vector<Car*>>());
+
+    enum_<GameMode>("GameMode")
         .value("SOCCAR", GameMode::SOCCAR)
         .export_values();
 
-    py::class_<Arena>(m, "Arena")
-        .def(py::init(&Arena::Create), "game_mode"_a = GameMode::SOCCAR, "tick_rate"_a = 120)
+    class_<Arena, boost::noncopyable>("Arena", no_init)
+
+        .def("__init__", make_constructor(&Arena::Create,
+            default_call_policies(), (arg("game_mode")=GameMode::SOCCAR,
+                arg("tick_rate")=120)))
+
         .def_readonly("game_mode", &Arena::gameMode)
         .def_readonly("tick_time", &Arena::tickTime)
-        .def_property_readonly("tick_rate", &Arena::GetTickRate)
+        .add_property("tick_rate", &Arena::GetTickRate)
         .def_readonly("tick_count", &Arena::tickCount)
         .def_readonly("ball", &Arena::ball)
-        .def("get_boost_pads", &Arena::GetBoostPads, py::return_value_policy::reference)
-        .def("get_cars", &Arena::GetCars, py::return_value_policy::reference)
-        .def("add_car", &Arena::AddCar, "team"_a, "config"_a = CAR_CONFIG_OCTANE,
-            py::return_value_policy::reference)
-        .def("remove_car", &Arena::RemoveCar, "car"_a)
-        .def("get_car_from_id", &Arena::GetCarFromID, "id"_a)
 
-        .def("set_goal_score_call_back", [](Arena& arena, pybind11::function callback_fn) {
-            GoalScoreEventFn callback = [callback_fn](Arena* arena,
-                Team scoringTeam, void* userInfo) {
-                callback_fn(arena, scoringTeam);
-            };
-            arena.SetGoalScoreCallback(callback);
-        })
+        .def("get_boost_pads", &Arena::GetBoostPads,
+            return_value_policy<reference_existing_object>())
 
-        .def("write_to_file", [](Arena &arena, std::string path_str) {
-            const std::filesystem::path path = std::filesystem::u8path(path_str);
-            arena.WriteToFile(path);
-        }, "path_str"_a)
+        .def("get_cars", &Arena::GetCars,
+            return_value_policy<reference_existing_object>())
 
-        .def_static("load_from_file", [](std::string path_str) {
-            const std::filesystem::path path = std::filesystem::u8path(path_str);
-            return Arena::LoadFromFile(path);
-        }, "path_str"_a, py::return_value_policy::reference)
+        .def("add_car", &Arena::AddCar, (arg("team"), arg("config")=CAR_CONFIG_OCTANE),
+            return_value_policy<reference_existing_object>())
+
+        .def("remove_car", &Arena::RemoveCar, arg("car"))
+        .def("get_car_from_id", &Arena::RemoveCar, arg("id"))
+
+        .def("set_goal_score_call_back", &ArenaSetGoalScoreCallback,
+            (arg("self"), arg("callback_fn")))
+
+        .def("write_to_file", &ArenaWriteToFile, arg("path_str"))
+        .def("load_from_file", &ArenaLoadFromFile, arg("path_str"),
+            return_value_policy<reference_existing_object>())
 
         .def("step", &Arena::Step)
-        .def("clone", &Arena::Clone, "copy_callbacks"_a)
-        .def("reset_to_random_kickoff", &Arena::ResetToRandomKickoff, "seed"_a = -1);
+        .def("clone", &Arena::Clone, arg("copy_callbacks"),
+            return_value_policy<manage_new_object>())
+        .def("reset_to_random_kickoff", &Arena::ResetToRandomKickoff, arg("seed")=-1);
+
+    register_ptr_to_python<Arena*>();
+
 }

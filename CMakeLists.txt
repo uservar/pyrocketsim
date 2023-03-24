@@ -5,7 +5,13 @@ project(PyRocketSim)
 set(CMAKE_SHARED_LIBRARY_PREFIX "")
 
 add_subdirectory(RocketSim)
-find_package(PythonLibs REQUIRED)
+
+if(DEFINED PYTHON_LIBS_VERSION)
+    find_package(PythonLibs ${PYTHON_LIBS_VERSION} EXACT REQUIRED)
+else()
+    find_package(PythonLibs REQUIRED)
+endif()
+
 find_package(Boost REQUIRED COMPONENTS python numpy)
 
 include_directories(${PYTHON_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})

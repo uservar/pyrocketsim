@@ -1,16 +1,23 @@
 # pyrocketsim
 Python bindings for RocketSim using pybind11
 
-## Clone & Build
+## Build
+You need to have a C++20 compiler and [CMake](https://cmake.org/) >= 3.13 installed.
+
+Then, you can install locally using pip:
 ```
-git clone https://github.com/uservar/pyrocketsim
-cd pyrocketsim
+pip install -e .
+```
+
+Or, you can build directly:
+```
 cmake -B ./build -DCMAKE_BUILD_TYPE=Release
 cmake --build ./build --config Release --parallel
 ```
-The built binaries will either be in ./build/ or ./build/Release/
+In which case, the built binaries will either be in ./build/ or ./build/Release/
 
-Note: As a limitation of using pybind, binaries will only work with the specific python version that was used in building them.
+
+Note: As a limitation of using pybind, the compiled binaries will only work with the specific python version that was used in building them.
 
 ## Example Usage
 

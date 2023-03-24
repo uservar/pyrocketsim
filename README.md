@@ -70,4 +70,4 @@ same_old_arena = RS.Arena.load_from_file("arena_file_path")
 arena.reset_to_random_kickoff()
 ```
 
-If you want an idea of what's included in the bindings you can either read the [source code](https://github.com/uservar/pyrocketsim/blob/main/src/pyrocketsim.cpp) or [pydoc pyrocketsim](https://gist.github.com/uservar/95bdfef383f691181883ddb2615be443).
+If you want an idea of what's included in the bindings you can either read the [source code](src/pyrocketsim.cpp) or [pydoc pyrocketsim](https://gist.github.com/uservar/95bdfef383f691181883ddb2615be443).

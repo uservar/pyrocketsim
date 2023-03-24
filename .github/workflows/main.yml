@@ -15,7 +15,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: ["windows-latest"]
+        os: ["windows-latest", "ubuntu-latest"]
         python-version: ["3.9"]
 
     steps:
@@ -23,7 +23,8 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Setup Requirements
+      - name: Build pyrocketsim (Windows)
+        if: matrix.os == 'windows-latest'
         run: |
           pip install numpy
           Invoke-WebRequest -OutFile boost.zip https://boostorg.jfrog.io/artifactory/main/release/1.81.0/source/boost_1_81_0.zip
@@ -31,14 +32,24 @@ jobs:
           cd boost_1_81_0
           ./bootstrap.bat --with-python=python -prefix=${{github.workspace}}/boost
           ./b2 variant=release address-model=64 architecture=x86 link=shared runtime-link=shared --with-python --build-type=minimal --prefix=${{github.workspace}}/boost install
-
-      - name: Build pyrocketsim
-        run: |
+          cd ..
           mkdir build
           cd build
-          cmake .. -DCMAKE_BUILD_TYPE=Release -DPYTHON_LIBS_VERSION="3.9" -DBOOST_ROOT=${{github.workspace}}/boost
+          cmake .. -DCMAKE_BUILD_TYPE=Release -DPYTHON_LIBS_VERSION=${{ matrix.python-version }} -DBOOST_ROOT=${{github.workspace}}/boost
+          cmake --build . --config Release
+
+      - name: Build pyrocketsim (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libboost-all-dev
+          mkdir build
+          cd build
+          cmake .. -DCMAKE_BUILD_TYPE=Release
           cmake --build . --config Release
 
       - uses: actions/upload-artifact@v3
         with:
-          path: ${{github.workspace}}/build/${{env.BUILD_TYPE}}/*.dll
+          path: |
+            ${{github.workspace}}/build/${{env.BUILD_TYPE}}/*.dll
+            ${{github.workspace}}/build/*.so

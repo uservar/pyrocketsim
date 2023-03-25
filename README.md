@@ -1,8 +1,15 @@
 # pyrocketsim
 Python bindings for RocketSim using pybind11
 
+## Clone
+Make sure to clone recusively or git init/update submodules later
+```
+git clone --recursive https://github.com/uservar/pyrocketsim/
+cd pyrocketsim
+```
+
 ## Build
-You need to have a C++20 compiler and [CMake](https://cmake.org/) >= 3.13 installed.
+You need to have a C++20 compiler and CMake > 3.12 installed.
 
 - Then, you can install locally using pip:
 ```

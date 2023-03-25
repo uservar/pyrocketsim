@@ -4,12 +4,13 @@ Python bindings for RocketSim using pybind11
 ## Build
 You need to have a C++20 compiler and [CMake](https://cmake.org/) >= 3.13 installed.
 
-Then, you can install locally using pip:
+- Then, you can install locally using pip:
 ```
 pip install -e .
 ```
+You can set CMAKE_BUILD_PARALLEL_LEVEL env variable to limit the number of parallel jobs.
 
-Or, you can build directly:
+- Or, you can build directly:
 ```
 cmake -B ./build -DCMAKE_BUILD_TYPE=Release
 cmake --build ./build --config Release --parallel

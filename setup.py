@@ -1,5 +1,5 @@
 """
-This is the example setup.py file for pybind11 projects.
+This is a modified example setup.py file for pybind11 projects.
 """
 
 import os
@@ -19,14 +19,16 @@ PLAT_TO_CMAKE = {
     "win-arm64": "ARM64",
 }
 
+project_dir = Path(__file__).parent
+
 
 # A CMakeExtension needs a sourcedir instead of a file list.
 # The name must be the _single_ output extension from the CMake build.
 # If you need multiple extensions, see scikit-build.
 class CMakeExtension(Extension):
-    def __init__(self, name: str, sourcedir: str = "") -> None:
+    def __init__(self, name: str) -> None:
         super().__init__(name, sources=[])
-        self.sourcedir = os.fspath(Path(sourcedir).resolve())
+        self.sourcedir = os.fspath(project_dir)
 
 
 class CMakeBuild(build_ext):
@@ -58,9 +60,6 @@ class CMakeBuild(build_ext):
         # (needed e.g. to build for ARM OSx on conda-forge)
         if "CMAKE_ARGS" in os.environ:
             cmake_args += [item for item in os.environ["CMAKE_ARGS"].split(" ") if item]
-
-        # In this example, we pass in the version to C++. You might not need to.
-        cmake_args += [f"-DEXAMPLE_VERSION_INFO={self.distribution.get_version()}"]  # type: ignore[attr-defined]
 
         if self.compiler.compiler_type != "msvc":
             # Using Ninja-build since it a) is available as a wheel and b)
@@ -109,17 +108,13 @@ class CMakeBuild(build_ext):
         # Set CMAKE_BUILD_PARALLEL_LEVEL to control the parallel build level
         # across all generators.
         if "CMAKE_BUILD_PARALLEL_LEVEL" not in os.environ:
-            # self.parallel is a Python 3 only way to set parallel jobs by hand
-            # using -j in the build_ext call, not supported by pip or PyPA-build.
-            if hasattr(self, "parallel") and self.parallel:
-                # CMake 3.12+ only.
-                build_args += [f"-j{self.parallel}"]
+            # Use parallel with default number of jobs
+            build_args += [f"--parallel"]
 
         build_temp = Path(self.build_temp) / ext.name
         if not build_temp.exists():
             build_temp.mkdir(parents=True)
         subprocess.run(
-        
             ["cmake", ext.sourcedir, *cmake_args], cwd=build_temp, check=True
         )
         subprocess.run(
@@ -127,15 +122,18 @@ class CMakeBuild(build_ext):
         )
 
 
+# using README.md to define long_description
+with open(project_dir / "README.md") as readme_file:
+    readme = readme_file.read()
+
 # The information here can also be placed in setup.cfg - better separation of
 # logic and declaration, and simpler if you include description/version in a file.
 setup(
     name="pyrocketsim",
-    version="1.0.0",
+    version="1.0.1",
     author="Zealan & Ntud",
-    author_email="",
     description="Python bindings for RocketSim",
-    long_description="",
+    long_description=readme,
     ext_modules=[CMakeExtension("pyrocketsim")],
     cmdclass={"build_ext": CMakeBuild},
     zip_safe=False,

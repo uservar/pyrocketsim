@@ -15,41 +15,45 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: ["windows-latest", "ubuntu-latest"]
-        python-version: ["3.9"]
+        os: ["windows-2022", "ubuntu-22.04"]
+        python-version: ["3.11"]
 
     steps:
       - uses: actions/checkout@v3
         with:
           submodules: recursive
 
-      - name: Build pyrocketsim (Windows)
-        if: matrix.os == 'windows-latest'
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Setup requirements (Windows)
+        if: matrix.os == 'windows-2022'
         run: |
           pip install numpy
-          Invoke-WebRequest -OutFile boost.zip https://boostorg.jfrog.io/artifactory/main/release/1.81.0/source/boost_1_81_0.zip
-          tar xfz boost.zip
+          curl -L -O https://boostorg.jfrog.io/artifactory/main/release/1.81.0/source/boost_1_81_0.zip
+          tar xfz boost_1_81_0.zip
           cd boost_1_81_0
           ./bootstrap.bat --with-python=python -prefix=${{github.workspace}}/boost
-          ./b2 variant=release address-model=64 architecture=x86 link=shared runtime-link=shared --with-python --build-type=minimal --prefix=${{github.workspace}}/boost install
-          cd ..
-          mkdir build
-          cd build
-          cmake .. -DCMAKE_BUILD_TYPE=Release -DPYTHON_LIBS_VERSION=${{ matrix.python-version }} -DBOOST_ROOT=${{github.workspace}}/boost
-          cmake --build . --config Release
+          ./b2 variant=release address-model=64 link=static runtime-link=shared --with-python --build-type=minimal --prefix=${{github.workspace}}/boost install
 
-      - name: Build pyrocketsim (Linux)
-        if: matrix.os == 'ubuntu-latest'
+      - name: Setup requirements (Linux)
+        if: matrix.os == 'ubuntu-22.04'
         run: |
-          sudo apt-get update
-          sudo apt-get install -y libboost-all-dev
-          mkdir build
-          cd build
-          cmake .. -DCMAKE_BUILD_TYPE=Release
-          cmake --build . --config Release
+          pip install numpy
+          curl -L -O https://boostorg.jfrog.io/artifactory/main/release/1.81.0/source/boost_1_81_0.tar.gz
+          tar xfz boost_1_81_0.tar.gz
+          cd boost_1_81_0
+          ./bootstrap.sh --with-python=python -prefix=${{github.workspace}}/boost
+          ./b2 cxxflags=-fPIC variant=release address-model=64 link=static runtime-link=shared --with-python --build-type=minimal --prefix=${{github.workspace}}/boost install
+
+      - name: Build pyrocketsim
+        run: |
+          cmake -B ./build -DCMAKE_BUILD_TYPE=Release -DBOOST_ROOT=${{github.workspace}}/boost
+          cmake --build ./build --config Release --parallel
 
       - uses: actions/upload-artifact@v3
         with:
           path: |
-            ${{github.workspace}}/build/${{env.BUILD_TYPE}}/*.dll
+            ${{github.workspace}}/build/${{env.BUILD_TYPE}}/*.pyd
             ${{github.workspace}}/build/*.so

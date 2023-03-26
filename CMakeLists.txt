@@ -1,25 +1,30 @@
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.15)
 
 project(PyRocketSim)
 
-set(CMAKE_SHARED_LIBRARY_PREFIX "")
-
 add_subdirectory(RocketSim)
 
-if(DEFINED PYTHON_LIBS_VERSION)
-    find_package(PythonLibs ${PYTHON_LIBS_VERSION} EXACT REQUIRED)
-else()
-    find_package(PythonLibs REQUIRED)
-endif()
+set(Python_USE_STATIC_LIBS ON)
+find_package(Python COMPONENTS Development.Module REQUIRED)
 
-find_package(Boost REQUIRED COMPONENTS python numpy)
+set(Boost_USE_STATIC_LIBS ON)
+find_package(Boost REQUIRED COMPONENTS python)
 
-include_directories(${PYTHON_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
+include_directories(${Python_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
+link_directories(${Python_LIBRARY_DIRS} ${Boost_LIBRARY_DIRS})
 
-add_library(pyrocketsim SHARED src/pyrocketsim.cpp)
+message("${Boost_INCLUDE_DIRS}")
+message("${Boost_LIBRARIES}")
+message("${Boost_LIBRARY_DIRS}")
+message("${Python_INCLUDE_DIRS}")
+message("${Python_LIBRARIES}")
+message("${Python_LIBRARY_DIRS}")
 
-target_link_libraries(pyrocketsim PRIVATE ${Boost_LIBRARIES} ${PYTHON_LIBRARIES})
-target_link_libraries(pyrocketsim PRIVATE RocketSim)
+Python_add_library(pyrocketsim src/pyrocketsim.cpp)
 
 target_compile_options(RocketSim PRIVATE -fPIC)
 set_target_properties(pyrocketsim PROPERTIES CXX_STANDARD 20)
+set_target_properties(pyrocketsim PROPERTIES PREFIX "")
+
+target_link_libraries(pyrocketsim PRIVATE ${Boost_LIBRARIES} ${Python_LIBRARIES})
+target_link_libraries(pyrocketsim PRIVATE RocketSim)

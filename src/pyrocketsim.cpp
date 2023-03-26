@@ -110,12 +110,6 @@ object BoostPadStateFormat(const BoostPadState& bps, const char* spec = "") {
         spec, bps.isActive, bps.cooldown);
 }
 
-// Ball
-float BallGetRadius(Ball& ball) {
-    return ball.GetRadius() * 50;
-}
-
-
 // WorldContact
 object WorldContactFormat(const decltype(CarState::worldContact)& wc, const char* spec = "") {
     return str("{{has_contact: {1},\n contact_normal: {2:{0}}}}").attr("format")(
@@ -295,15 +289,23 @@ BOOST_PYTHON_MODULE(pyrocketsim) {
     class_<std::vector<BoostPad*> >("BoostPadVector")
         .def(vector_indexing_suite<std::vector<BoostPad*>>());
 
+    class_<BallHitInfo>("BallHitInfo", init<>())
+        .def_readwrite("car_id", &BallHitInfo::carID)
+        .def_readwrite("relative_pos_on_ball", &BallHitInfo::relativePosOnBall)
+        .def_readwrite("ball_pos", &BallHitInfo::ballPos)
+        .def_readwrite("extra_hit_vel", &BallHitInfo::extraHitVel)
+        .def_readwrite("tick_count_when_hit", &BallHitInfo::tickCountWhenHit);
+
     class_<BallState>("BallState", init<>())
         .def_readwrite("pos", &BallState::pos)
         .def_readwrite("vel", &BallState::vel)
-        .def_readwrite("ang_vel", &BallState::angVel);
+        .def_readwrite("ang_vel", &BallState::angVel)
+        .def_readwrite("ball_hit_info", &BallState::ballHitInfo);
 
     class_<Ball, boost::noncopyable>("Ball", no_init)
         .def("get_state", &Ball::GetState)
         .def("set_state", &Ball::SetState, arg("ball_state"))
-        .def("get_radius", &BallGetRadius);
+        .def("get_radius", &Ball::GetRadius);
 
     register_ptr_to_python<Ball*>();
 

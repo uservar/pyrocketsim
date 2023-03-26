@@ -4,6 +4,7 @@
 #include "../src/boostpad.cpp"
 #include "../src/carcontrols.cpp"
 #include "../src/carconfig.cpp"
+#include "../src/ball.cpp"
 #include "../src/car.cpp"
 #include "../src/arena.cpp"
 
@@ -18,6 +19,7 @@ PYBIND11_MODULE(pyrocketsim, m) {
     init_boostpad(m);
     init_carcontrols(m);
     init_carconfig(m);
+    init_ball(m);
     init_car(m);
     init_arena(m);
 }

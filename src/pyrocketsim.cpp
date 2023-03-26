@@ -5,7 +5,6 @@
 
 #include <boost/format.hpp>
 #include <boost/python/numpy.hpp>
-#include <boost/python/numpy.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 
 #include "../RocketSim/src/RocketSim.h"
@@ -38,12 +37,7 @@ tuple VecAsTuple(const Vec& vec) {
 }
 
 np::ndarray VecAsNumpy(const Vec& vec) {
-    np::ndarray arr = np::zeros(make_tuple(3), np::dtype::get_builtin<float>());
-    float* data = reinterpret_cast<float*>(arr.get_data());
-    data[0] = vec.x;
-    data[1] = vec.y;
-    data[2] = vec.z;
-    return arr;
+    return np::array(VecAsTuple(vec));
 }
 
 object VecFormat(const Vec& vec, const char* spec = "") {
@@ -73,18 +67,10 @@ object RotMatFormat(const RotMat& mat, const char* spec = "") {
 }
 
 np::ndarray RotMatAsNumpy(const RotMat& mat) {
-    np::ndarray arr = np::zeros(make_tuple(3, 3), np::dtype::get_builtin<float>());
-    float* data = reinterpret_cast<float*>(arr.get_data());
-    data[0] = mat.forward.x;
-    data[1] = mat.forward.y;
-    data[2] = mat.forward.z;
-    data[3] = mat.right.x;
-    data[4] = mat.right.y;
-    data[5] = mat.right.z;
-    data[6] = mat.up.x;
-    data[7] = mat.up.y;
-    data[8] = mat.up.z;
-    return arr;
+    return np::array(make_tuple(
+        mat.forward.x, mat.forward.y, mat.forward.z,
+        mat.right.x, mat.right.y, mat.right.z,
+        mat.up.x, mat.up.y,mat.up.z));
 }
 
 // Angle
@@ -93,12 +79,7 @@ tuple AngleAsTuple(const Angle& ang) {
 }
 
 np::ndarray AngleAsNumpy(const Angle& ang) {
-    np::ndarray arr = np::zeros(make_tuple(3), np::dtype::get_builtin<float>());
-    float* data = reinterpret_cast<float*>(arr.get_data());
-    data[0] = ang.yaw;
-    data[1] = ang.pitch;
-    data[2] = ang.roll;
-    return arr;
+    return np::array(AngleAsTuple(ang));
 }
 
 object AngleFormat(const Angle& ang, const char* spec = "") {
@@ -176,6 +157,7 @@ Arena* ArenaLoadFromFile(std::string path_str) {
 
 BOOST_PYTHON_MODULE(pyrocketsim) {
 
+    // Py_Initialize();
     np::initialize();
 
     def("init", &RocketSim::Init);

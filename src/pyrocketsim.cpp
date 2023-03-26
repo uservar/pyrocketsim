@@ -1,9 +1,11 @@
 #define BOOST_PYTHON_STATIC_LIB
+#define BOOST_NUMPY_STATIC_LIB
 #define HAVE_SNPRINTF
 #include <boost/python.hpp>
 
 #include <boost/format.hpp>
-// #include <boost/python/numpy.hpp>
+#include <boost/python/numpy.hpp>
+#include <boost/python/numpy.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 
 #include "../RocketSim/src/RocketSim.h"
@@ -13,7 +15,7 @@
 #include <stdexcept>
 
 using namespace boost::python;
-// namespace np = numpy;
+namespace np = boost::python::numpy;
 
 
 // Vec
@@ -35,14 +37,14 @@ tuple VecAsTuple(const Vec& vec) {
     return make_tuple(vec.x, vec.y, vec.z);
 }
 
-// np::ndarray VecAsNumpy(const Vec& vec) {
-//     np::ndarray arr = np::zeros(make_tuple(3), np::dtype::get_builtin<float>());
-//     float* data = reinterpret_cast<float*>(arr.get_data());
-//     data[0] = vec.x;
-//     data[1] = vec.y;
-//     data[2] = vec.z;
-//     return arr;
-// }
+np::ndarray VecAsNumpy(const Vec& vec) {
+    np::ndarray arr = np::zeros(make_tuple(3), np::dtype::get_builtin<float>());
+    float* data = reinterpret_cast<float*>(arr.get_data());
+    data[0] = vec.x;
+    data[1] = vec.y;
+    data[2] = vec.z;
+    return arr;
+}
 
 object VecFormat(const Vec& vec, const char* spec = "") {
     return str("[{1:{0}}, {2:{0}}, {3:{0}}]").attr("format")(
@@ -70,34 +72,34 @@ object RotMatFormat(const RotMat& mat, const char* spec = "") {
         spec, mat.forward, mat.right, mat.up);
 }
 
-// np::ndarray RotMatAsNumpy(const RotMat& mat) {
-//     np::ndarray arr = np::zeros(make_tuple(3, 3), np::dtype::get_builtin<float>());
-//     float* data = reinterpret_cast<float*>(arr.get_data());
-//     data[0] = mat.forward.x;
-//     data[1] = mat.forward.y;
-//     data[2] = mat.forward.z;
-//     data[3] = mat.right.x;
-//     data[4] = mat.right.y;
-//     data[5] = mat.right.z;
-//     data[6] = mat.up.x;
-//     data[7] = mat.up.y;
-//     data[8] = mat.up.z;
-//     return arr;
-// }
+np::ndarray RotMatAsNumpy(const RotMat& mat) {
+    np::ndarray arr = np::zeros(make_tuple(3, 3), np::dtype::get_builtin<float>());
+    float* data = reinterpret_cast<float*>(arr.get_data());
+    data[0] = mat.forward.x;
+    data[1] = mat.forward.y;
+    data[2] = mat.forward.z;
+    data[3] = mat.right.x;
+    data[4] = mat.right.y;
+    data[5] = mat.right.z;
+    data[6] = mat.up.x;
+    data[7] = mat.up.y;
+    data[8] = mat.up.z;
+    return arr;
+}
 
 // Angle
 tuple AngleAsTuple(const Angle& ang) {
     return make_tuple(ang.yaw, ang.pitch, ang.roll);
 }
 
-// np::ndarray AngleAsNumpy(const Angle& ang) {
-//     np::ndarray arr = np::zeros(make_tuple(3), np::dtype::get_builtin<float>());
-//     float* data = reinterpret_cast<float*>(arr.get_data());
-//     data[0] = ang.yaw;
-//     data[1] = ang.pitch;
-//     data[2] = ang.roll;
-//     return arr;
-// }
+np::ndarray AngleAsNumpy(const Angle& ang) {
+    np::ndarray arr = np::zeros(make_tuple(3), np::dtype::get_builtin<float>());
+    float* data = reinterpret_cast<float*>(arr.get_data());
+    data[0] = ang.yaw;
+    data[1] = ang.pitch;
+    data[2] = ang.roll;
+    return arr;
+}
 
 object AngleFormat(const Angle& ang, const char* spec = "") {
     return str("[{1:{0}}, {2:{0}}, {3:{0}}]").attr("format")(
@@ -174,7 +176,7 @@ Arena* ArenaLoadFromFile(std::string path_str) {
 
 BOOST_PYTHON_MODULE(pyrocketsim) {
 
-    // np::initialize();
+    np::initialize();
 
     def("init", &RocketSim::Init);
 
@@ -220,7 +222,7 @@ BOOST_PYTHON_MODULE(pyrocketsim) {
         .def(-self)
 
         .def("as_tuple", &VecAsTuple)
-        // .def("as_numpy", &VecAsNumpy)
+        .def("as_numpy", &VecAsNumpy)
 
         .def("__format__", &VecFormat, arg("spec"))
         .def("__str__", &VecFormat, arg("spec")="")
@@ -246,7 +248,7 @@ BOOST_PYTHON_MODULE(pyrocketsim) {
         .def("dot", &RotMat::Dot, arg("vec"))
         .def("transpose", &RotMat::Transpose)
 
-        // .def("as_numpy", &RotMatAsNumpy)
+        .def("as_numpy", &RotMatAsNumpy)
 
         .def("__format__", &RotMatFormat, arg("spec")="")
         .def("__str__", &RotMatFormat, arg("spec")="")
@@ -265,7 +267,7 @@ BOOST_PYTHON_MODULE(pyrocketsim) {
         .def("normalize_fix", &Angle::NormalizeFix)
 
         .def("as_tuple", &AngleAsTuple)
-        // .def("as_numpy", &AngleAsNumpy)
+        .def("as_numpy", &AngleAsNumpy)
 
         .def("__format__", &AngleFormat, arg("spec")="")
         .def("__str__", &AngleFormat, arg("spec")="")

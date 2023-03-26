@@ -8,7 +8,7 @@ set(Python_USE_STATIC_LIBS ON)
 find_package(Python COMPONENTS Development.Module REQUIRED)
 
 set(Boost_USE_STATIC_LIBS ON)
-find_package(Boost REQUIRED COMPONENTS python)
+find_package(Boost REQUIRED COMPONENTS python numpy)
 
 include_directories(${Python_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 link_directories(${Python_LIBRARY_DIRS} ${Boost_LIBRARY_DIRS})

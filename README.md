@@ -9,7 +9,7 @@ cd pyrocketsim
 ```
 
 ## Build
-You need to have a C++20 compiler and CMake > 3.12 installed.
+You need to have a C++20 compiler and CMake >= 3.13 installed and in your path.
 
 - Then, you can install locally using pip:
 ```
@@ -24,6 +24,7 @@ cmake --build ./build --config Release --parallel
 ```
 In which case, the built binaries will either be in ./build/ or ./build/Release/
 
+If you want to specify the python version, set PYBIND11_PYTHON_VERSION env variable to "3.x" or use -DPYBIND11_PYTHON_VERSION=3.x when building directly with cmake.
 
 Note: As a limitation of using pybind, the compiled binaries will only work with the specific python version that was used in building them.
 

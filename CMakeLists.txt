@@ -5,7 +5,11 @@ project(PyRocketSim)
 add_subdirectory(RocketSim)
 
 set(Python_USE_STATIC_LIBS ON)
-find_package(Python COMPONENTS Development.Module REQUIRED)
+if (DEFINED PYTHON_VERSION)
+	find_package(Python ${PYTHON_VERSION} EXACT COMPONENTS Development.Module REQUIRED)
+else()
+	find_package(Python COMPONENTS Development.Module REQUIRED)
+endif()
 
 set(Boost_USE_STATIC_LIBS ON)
 find_package(Boost REQUIRED COMPONENTS python numpy)

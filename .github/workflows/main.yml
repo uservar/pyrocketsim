@@ -3,7 +3,8 @@ name: Build
 on: [push, pull_request]
 
 env:
-  BUILD_TYPE: Release
+  BOOST_ROOT: ${{github.workspace}}/Boost
+  DISTUTILS_DEBUG: 1
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -34,8 +35,8 @@ jobs:
           curl -L -O https://boostorg.jfrog.io/artifactory/main/release/1.81.0/source/boost_1_81_0.zip
           tar xfz boost_1_81_0.zip
           cd boost_1_81_0
-          ./bootstrap.bat --with-python=python -prefix=${{github.workspace}}/boost
-          ./b2 variant=release address-model=64 link=static runtime-link=shared --with-python --build-type=minimal --prefix=${{github.workspace}}/boost install
+          ./bootstrap.bat --with-python=python -prefix=${{env.BOOST_ROOT}}
+          ./b2 variant=release address-model=64 link=static runtime-link=shared --with-python --build-type=minimal --prefix=${{env.BOOST_ROOT}} install
 
       - name: Setup requirements (Linux)
         if: matrix.os == 'ubuntu-20.04'
@@ -44,16 +45,15 @@ jobs:
           curl -L -O https://boostorg.jfrog.io/artifactory/main/release/1.81.0/source/boost_1_81_0.tar.gz
           tar xfz boost_1_81_0.tar.gz
           cd boost_1_81_0
-          ./bootstrap.sh --with-python=python -prefix=${{github.workspace}}/boost
-          ./b2 cxxflags=-fPIC variant=release address-model=64 link=static runtime-link=shared --with-python --build-type=minimal --prefix=${{github.workspace}}/boost install
+          ./bootstrap.sh --with-python=python -prefix=${{env.BOOST_ROOT}}
+          ./b2 cxxflags=-fPIC variant=release address-model=64 link=static runtime-link=shared --with-python --build-type=minimal --prefix=${{env.BOOST_ROOT}} install
 
-      - name: Build pyrocketsim
+      - name: Build pyrocketsim wheels
         run: |
-          cmake -B ./build -DCMAKE_BUILD_TYPE=Release -DBOOST_ROOT=${{github.workspace}}/boost
-          cmake --build ./build --config Release --parallel
+          pip install wheel
+          python setup.py bdist_wheel --py-limited-api=cp36
 
       - uses: actions/upload-artifact@v3
         with:
           path: |
-            ${{github.workspace}}/build/${{env.BUILD_TYPE}}/*.pyd
-            ${{github.workspace}}/build/*.so
+            ${{github.workspace}}/dist/*.whl

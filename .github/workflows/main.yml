@@ -36,7 +36,7 @@ jobs:
           tar xfz boost_1_81_0.zip
           cd boost_1_81_0
           ./bootstrap.bat --with-python=python -prefix=${{env.BOOST_ROOT}}
-          ./b2 variant=release address-model=64 link=static runtime-link=shared --with-python --build-type=minimal --prefix=${{env.BOOST_ROOT}} install
+          ./b2 variant=release address-model=32 link=static runtime-link=shared --with-python --build-type=minimal --prefix=${{env.BOOST_ROOT}} install
 
       - name: Setup requirements (Linux)
         if: matrix.os == 'ubuntu-20.04'

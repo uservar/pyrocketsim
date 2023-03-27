@@ -30,5 +30,5 @@ target_compile_options(RocketSim PRIVATE -fPIC)
 set_target_properties(pyrocketsim PROPERTIES CXX_STANDARD 20)
 set_target_properties(pyrocketsim PROPERTIES PREFIX "")
 
-target_link_libraries(pyrocketsim PRIVATE ${Boost_LIBRARIES} ${Python_LIBRARIES})
+target_link_libraries(pyrocketsim PRIVATE ${Boost_LIBRARIES})
 target_link_libraries(pyrocketsim PRIVATE RocketSim)

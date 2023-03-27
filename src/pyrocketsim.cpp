@@ -1,8 +1,10 @@
 #define BOOST_PYTHON_STATIC_LIB
 #define BOOST_NUMPY_STATIC_LIB
 #define HAVE_SNPRINTF
-#include <boost/python.hpp>
 
+#define Py_NO_ENABLE_SHARED
+
+#include <boost/python.hpp>
 #include <boost/format.hpp>
 #include <boost/python/numpy.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>

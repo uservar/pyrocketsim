@@ -1,6 +1,7 @@
 #include <pybind11/pybind11.h>
 
 #include "../RocketSim/src/Sim/Car/Car.h"
+#include "../RocketSim/src/RLConst.h"
 
 namespace py = pybind11;
 using namespace pybind11::literals;
@@ -88,8 +89,8 @@ void init_car(py::module_ &m) {
             car.controls = controls; }, "car_controls"_a)
         .def("get_state", &Car::GetState)
         .def("set_state", &Car::SetState, "car_state"_a)
-        .def("demolish", &Car::Demolish)
-        .def("respawn", &Car::Respawn, "seed"_a = -1)
+        .def("demolish", &Car::Demolish, "respawn_delay"_a = RLConst::BOOST_SPAWN_AMOUNT)
+        .def("respawn", &Car::Respawn, "seed"_a = -1, "boost_amount"_a = RLConst::BOOST_SPAWN_AMOUNT)
         .def_property_readonly("forward_dir", &Car::GetForwardDir)
         .def_property_readonly("right_dir", &Car::GetRightDir)
         .def_property_readonly("up_dir", &Car::GetUpDir);

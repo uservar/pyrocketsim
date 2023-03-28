@@ -43,9 +43,6 @@ void init_mathtypes(py::module_ &m) {
             else throw py::index_error("list index out of range");
         })
 
-        .def(py::self < py::self)
-        .def(py::self > py::self)
-
         .def(py::self + py::self)
         .def(py::self - py::self)
         .def(py::self * py::self)
@@ -63,20 +60,13 @@ void init_mathtypes(py::module_ &m) {
         .def(py::self *= float())
         .def(py::self /= float())
 
+        .def(py::self < py::self)
+        .def(py::self > py::self)
+
         .def(-py::self)
 
-        .def("as_tuple", [](const Vec &vec) {
-            return py::make_tuple(vec.x, vec.y, vec.z);
-        })
-
-        .def("as_numpy", [](const Vec &vec) {
-            py::array_t<float> arr({3});
-            auto buf = arr.mutable_data();
-            buf[0] = vec.x;
-            buf[1] = vec.y;
-            buf[2] = vec.z;
-            return arr;
-        })
+        .def(py::self == py::self)
+        .def(py::self != py::self)
 
         .def("__format__", [](const Vec& vec, const char* spec) {
             return py::str("[{1:{0}}, {2:{0}}, {3:{0}}]").format(spec,
@@ -89,6 +79,19 @@ void init_mathtypes(py::module_ &m) {
 
         .def("__repr__", [](const Vec &vec) {
             return py::str("<Vec: {}>").format(vec);
+        })
+
+        .def("as_tuple", [](const Vec &vec) {
+            return py::make_tuple(vec.x, vec.y, vec.z);
+        })
+
+        .def("as_numpy", [](const Vec &vec) {
+            py::array_t<float> arr({3});
+            auto buf = arr.mutable_data();
+            buf[0] = vec.x;
+            buf[1] = vec.y;
+            buf[2] = vec.z;
+            return arr;
         });
 
     py::class_<RotMat>(m, "RotMat")
@@ -111,14 +114,33 @@ void init_mathtypes(py::module_ &m) {
         .def(py::self + py::self)
         .def(py::self - py::self)
 
+        .def(py::self += py::self)
+        .def(py::self -= py::self)
+
         .def(py::self * float())
         .def(py::self / float())
 
         .def(py::self *= float())
         .def(py::self /= float())
 
+        .def(py::self == py::self)
+        .def(py::self != py::self)
+
         .def("dot", &RotMat::Dot, "vec"_a)
         .def("transpose", &RotMat::Transpose)
+
+        .def("__format__", [](const RotMat& mat, const char* spec) {
+            return py::str("(FRU) [\n {1:{0}},\n {2:{0}},\n {3:{0}}]").format(spec,
+                mat.forward, mat.right, mat.up);
+        })
+
+        .def("__str__", [](const RotMat &mat) {
+            return py::str("{}").format(mat);
+        })
+
+        .def("__repr__", [](const RotMat &mat) {
+            return py::str("<RotMat: {}>").format(mat);
+        })
 
         .def("as_numpy", [](const RotMat &mat) {
             py::array_t<float> arr({3, 3});
@@ -133,19 +155,6 @@ void init_mathtypes(py::module_ &m) {
             buf[7] = mat.up.y;
             buf[8] = mat.up.z;
             return arr;
-        })
-
-        .def("__format__", [](const RotMat& mat, const char* spec) {
-            return py::str("(FRU) [\n {1:{0}},\n {2:{0}},\n {3:{0}}]").format(spec,
-                mat.forward, mat.right, mat.up);
-        })
-
-        .def("__str__", [](const RotMat &mat) {
-            return py::str("{}").format(mat);
-        })
-
-        .def("__repr__", [](const RotMat &mat) {
-            return py::str("<RotMat: {}>").format(mat);
         });
 
     py::class_<Angle>(m, "Angle")
@@ -157,6 +166,7 @@ void init_mathtypes(py::module_ &m) {
 
         .def_static("from_rot_mat", &Angle::FromRotMat, "rot_mat"_a)
         .def("to_rot_mat", &Angle::ToRotMat)
+
         .def("get_forward_vector", &Angle::GetForwardVector)
         .def("normalize_fix", &Angle::NormalizeFix)
 

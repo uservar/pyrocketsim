@@ -11,6 +11,15 @@ namespace py = pybind11;
 using namespace pybind11::literals;
 
 
+void ArenaSetGoalScoreCallback(Arena& arena, py::function callback_fn) {
+    GoalScoreEventFn callback = [callback_fn](Arena* arena,
+        Team scoringTeam, void* userInfo) {
+        callback_fn(arena, scoringTeam);  // not using userInfo
+    };
+    arena.SetGoalScoreCallback(callback);
+}
+
+
 void init_arena(py::module_ &m) {
 
     py::enum_<GameMode>(m, "GameMode")
@@ -21,24 +30,26 @@ void init_arena(py::module_ &m) {
     py::class_<Arena>(m, "Arena")
         .def(py::init(&Arena::Create), "game_mode"_a = GameMode::SOCCAR, "tick_rate"_a = 120)
         .def_readonly("game_mode", &Arena::gameMode)
+
+        .def("get_mutator_config", &Arena::GetMutatorConfig)  // creates a copy
+        .def("set_mutator_config", &Arena::SetMutatorConfig, "mutator_config"_a)
+
         .def_readonly("tick_time", &Arena::tickTime)
         .def_property_readonly("tick_rate", &Arena::GetTickRate)
         .def_readonly("tick_count", &Arena::tickCount)
         .def_readonly("ball", &Arena::ball)
-        .def("get_boost_pads", &Arena::GetBoostPads, py::return_value_policy::reference)
+
+        .def("get_boost_pads", &Arena::GetBoostPads,py::return_value_policy::reference)
         .def("get_cars", &Arena::GetCars, py::return_value_policy::reference)
-        .def("add_car", &Arena::AddCar, "team"_a, "config"_a = CAR_CONFIG_OCTANE,
+
+        .def("add_car", &Arena::AddCar,"team"_a, "config"_a = CAR_CONFIG_OCTANE,
             py::return_value_policy::reference)
+
         .def("remove_car", &Arena::RemoveCar, "car"_a)
         .def("get_car_from_id", &Arena::GetCarFromID, "id"_a)
 
-        .def("set_goal_score_call_back", [](Arena& arena, pybind11::function callback_fn) {
-            GoalScoreEventFn callback = [callback_fn](Arena* arena,
-                Team scoringTeam, void* userInfo) {
-                callback_fn(arena, scoringTeam);
-            };
-            arena.SetGoalScoreCallback(callback);
-        })
+        .def("set_goal_score_callback", &ArenaSetGoalScoreCallback)
+        .def("set_goal_score_call_back", &ArenaSetGoalScoreCallback)  // I goofed
 
         .def("write_to_file", &Arena::WriteToFile, "path"_a)
         .def_static("load_from_file", &Arena::LoadFromFile,

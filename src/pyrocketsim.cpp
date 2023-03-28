@@ -7,6 +7,7 @@
 #include "../src/carconfig.cpp"
 #include "../src/ball.cpp"
 #include "../src/car.cpp"
+#include "../src/mutatorconfig.cpp"
 #include "../src/arena.cpp"
 
 #include "../RocketSim/src/RocketSim.h"
@@ -25,5 +26,6 @@ PYBIND11_MODULE(pyrocketsim, m) {
     init_carconfig(m);
     init_ball(m);
     init_car(m);
+    init_mutatorconfig(m);
     init_arena(m);
 }

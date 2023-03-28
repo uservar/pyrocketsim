@@ -43,6 +43,13 @@ tick_rate = 120
 arena = rs.Arena(rs.SOCCAR, tick_rate)
 print(f"Arena tick rate: {arena.tick_rate}")
 
+# optional mutators, many of them are not listed here
+mutator_config = arena.get_mutator_config()
+mutator_config.ball_radius = 50
+mutator_config.boost_force = 9000
+mutator_config.gravity = rs.Vec(0, -80, -200)
+mutator_config.demo_mode = rs.DemoMode.ON_CONTACT
+arena.set_mutator_config(mutator_config)
 
 # setup ball initial state
 ball_state = arena.ball.get_state()
@@ -78,7 +85,7 @@ print(f"{car_state.pos = :.2f}")
 print(f"{car_state.rot_mat = :.2f}")
 
 # there's some helper functions
-arena.set_goal_score_call_back(lambda arena, team: print(f"{team} scored!"))
+arena.set_goal_score_callback(lambda arena, team: print(f"{team} scored!"))
 arena.step(100)
 
 old_arena = arena.clone(copy_callbacks=False)

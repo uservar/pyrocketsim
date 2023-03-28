@@ -11,7 +11,7 @@ void init_mutatorconfig(py::module_ &m) {
     py::enum_<DemoMode>(m, "DemoMode")
         .value("NORMAL", DemoMode::NORMAL)
         .value("ON_CONTACT", DemoMode::ON_CONTACT)
-        .value("DISABLED", DemoMode::NORMAL);
+        .value("DISABLED", DemoMode::DISABLED);
 
     py::class_<MutatorConfig>(m, "MutatorConfig")
         .def(py::init<>())

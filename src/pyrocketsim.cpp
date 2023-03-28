@@ -1,4 +1,5 @@
 #include <pybind11/pybind11.h>
+#include <pybind11/stl/filesystem.h>
 
 #include "../src/mathtypes.cpp"
 #include "../src/boostpad.cpp"
@@ -13,7 +14,7 @@
 
 PYBIND11_MODULE(pyrocketsim, m) {
 
-    m.def("init", &RocketSim::Init);
+    m.def("init", &RocketSim::Init, "path"_a = "collision_meshes");
 
     init_mathtypes(m);
     init_boostpad(m);

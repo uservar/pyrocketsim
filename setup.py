@@ -130,7 +130,7 @@ with open(project_dir / "README.md") as readme_file:
 # logic and declaration, and simpler if you include description/version in a file.
 setup(
     name="pyrocketsim",
-    version="1.0.1",
+    version="1.1.0.dev1",
     author="Zealan & Ntud",
     description="Python bindings for RocketSim",
     long_description=readme,

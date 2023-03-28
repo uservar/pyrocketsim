@@ -3,6 +3,7 @@
 #include <pybind11/stl.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/functional.h>
+#include <pybind11/stl/filesystem.h>
 
 #include "../RocketSim/src/Sim/Arena/Arena.h"
 
@@ -12,9 +13,9 @@ using namespace pybind11::literals;
 
 void init_arena(py::module_ &m) {
 
-
     py::enum_<GameMode>(m, "GameMode")
         .value("SOCCAR", GameMode::SOCCAR)
+        .value("THE_VOID", GameMode::THE_VOID)
         .export_values();
 
     py::class_<Arena>(m, "Arena")
@@ -39,15 +40,9 @@ void init_arena(py::module_ &m) {
             arena.SetGoalScoreCallback(callback);
         })
 
-        .def("write_to_file", [](Arena &arena, std::string path_str) {
-            const std::filesystem::path path = std::filesystem::u8path(path_str);
-            arena.WriteToFile(path);
-        }, "path_str"_a)
-
-        .def_static("load_from_file", [](std::string path_str) {
-            const std::filesystem::path path = std::filesystem::u8path(path_str);
-            return Arena::LoadFromFile(path);
-        }, "path_str"_a, py::return_value_policy::reference)
+        .def("write_to_file", &Arena::WriteToFile, "path"_a)
+        .def_static("load_from_file", &Arena::LoadFromFile,
+            "path_str"_a, py::return_value_policy::reference)
 
         .def("step", &Arena::Step)
         .def("clone", &Arena::Clone, "copy_callbacks"_a)

@@ -31,39 +31,39 @@ Note: As a limitation of using pybind, the compiled binaries will only work with
 ## Example Usage
 
 ```py
-import pyrocketsim as RS
+import pyrocketsim as rs
 
-# Initialize RocketSim (loads arena collision meshes, etc.)
-RS.init()
+# Initialize RocketSim with folder to collision meshes
+rs.init("collision_meshes")
 
 # setup rocketsim arena
 tick_rate = 120
-arena = RS.Arena(RS.SOCCAR, tick_rate)
+arena = rs.Arena(rs.SOCCAR, tick_rate)
 print(f"Arena tick rate: {arena.tick_rate}")
 
 
 # setup ball initial state
 ball_state = arena.ball.get_state()
-ball_state.pos = RS.Vec(0, 0, 500)
-ball_state.vel = RS.Vec(0, -6000, 0)  # A ball with 0 vel will not fall
+ball_state.pos = rs.Vec(0, 0, 500)
+ball_state.vel = rs.Vec(0, -6000, 0)  # A ball with 0 vel will not fall
 arena.ball.set_state(ball_state)
 print("Set ball state")
 
 # setup rocketsim cars
 for i in range(2):
-    team = RS.BLUE if i % 2 else RS.ORANGE
-    car = arena.add_car(team, RS.OCTANE)
+    team = rs.BLUE if i % 2 else rs.ORANGE
+    car = arena.add_car(team, rs.OCTANE)
     car_state = car.get_state()
     car_state.boost = 100
-    car_state.pos = RS.Vec(car.id * 200, car.id * 200, 200)
-    car_state.vel = RS.Vec(100, 100, 100)
-    car_state.ang_vel = RS.Vec(0, 0, 5.5)
+    car_state.pos = rs.Vec(car.id * 200, car.id * 200, 200)
+    car_state.vel = rs.Vec(100, 100, 100)
+    car_state.ang_vel = rs.Vec(0, 0, 5.5)
     car.set_state(car_state)
     print(f"Car added to team {team} with id {car.id}")
 
 # set car controls
 car = arena.get_cars()[0]
-car_controls = RS.CarControls(throttle=1, pitch=-1)
+car_controls = rs.CarControls(throttle=1, pitch=-1)
 car.set_controls(car_controls)
 
 # do any number of steps
@@ -81,7 +81,7 @@ arena.step(100)
 
 old_arena = arena.clone(copy_callbacks=False)
 old_arena.write_to_file("arena_file_path")
-same_old_arena = RS.Arena.load_from_file("arena_file_path")
+same_old_arena = rs.Arena.load_from_file("arena_file_path")
 
 arena.reset_to_random_kickoff()
 ```

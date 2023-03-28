@@ -19,7 +19,13 @@ void init_carconfig(py::module_ &m) {
         .def_readwrite("hitbox_pos_offset", &CarConfig::hitboxPosOffset)
         .def_readwrite("front_wheels", &CarConfig::frontWheels)
         .def_readwrite("back_wheels", &CarConfig::backWheels)
-        .def_readwrite("dodge_deadzone", &CarConfig::dodgeDeadzone);
+        .def_readwrite("dodge_deadzone", &CarConfig::dodgeDeadzone)
+        .def("__copy__",  [](const CarConfig &self) {
+            return CarConfig(self);
+        })
+        .def("__deepcopy__", [](const CarConfig &self, py::dict) {
+            return CarConfig(self);
+        }, "memo"_a);
 
     m.attr("OCTANE") = &CAR_CONFIG_OCTANE;
     m.attr("DOMINUS") = &CAR_CONFIG_DOMINUS;

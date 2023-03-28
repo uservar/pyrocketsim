@@ -1,5 +1,5 @@
 """
-This is a modified example setup.py file for pybind11 projects.
+This is modified from the example setup.py file for pybind11 projects.
 """
 
 import os
@@ -122,7 +122,7 @@ class CMakeBuild(build_ext):
         )
 
 
-# using README.md to define long_description
+# use README.md to define long_description
 with open(project_dir / "README.md") as readme_file:
     readme = readme_file.read()
 
@@ -130,12 +130,13 @@ with open(project_dir / "README.md") as readme_file:
 # logic and declaration, and simpler if you include description/version in a file.
 setup(
     name="pyrocketsim",
-    version="1.1.0.dev1",
+    version="1.1.0",
     author="Zealan & Ntud",
-    description="Python bindings for RocketSim",
     long_description=readme,
+    description="Python bindings for RocketSim",
+    url="https://github.com/uservar/pyrocketsim/",
     ext_modules=[CMakeExtension("pyrocketsim")],
     cmdclass={"build_ext": CMakeBuild},
-    zip_safe=False,
     python_requires=">=3.7",
+    zip_safe=False,
 )

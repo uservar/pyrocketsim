@@ -11,6 +11,9 @@
 
 #include "../RocketSim/src/RocketSim.h"
 
+namespace py = pybind11;
+using namespace pybind11::literals;
+
 
 PYBIND11_MODULE(pyrocketsim, m) {
 

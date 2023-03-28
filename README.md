@@ -2,7 +2,7 @@
 Python bindings for RocketSim using pybind11
 
 ## Clone
-Make sure to clone recusively or git init/update submodules later
+Make sure to clone recursively or git init/update submodules later
 ```
 git clone --recursive https://github.com/uservar/pyrocketsim/
 cd pyrocketsim
@@ -15,7 +15,7 @@ You need to have a C++20 compiler and CMake >= 3.13 installed and in your path.
 ```
 pip install -e .
 ```
-You can set CMAKE_BUILD_PARALLEL_LEVEL env variable to limit the number of parallel jobs.
+You can set CMAKE_BUILD_PARALLEL_LEVEL environment variable to limit the number of parallel jobs.
 
 - Or, you can build directly:
 ```
@@ -33,8 +33,10 @@ Note: As a limitation of using pybind, the compiled binaries will only work with
 ```py
 import pyrocketsim as rs
 
-# Initialize RocketSim with folder to collision meshes
-rs.init("collision_meshes")
+# Initialize RocketSim with a folder to collision meshes
+# You can specify a relative or absolute (str / os.path / pathlib) path
+# By default, it looks for a relative folder called "collision_meshes"
+rs.init()
 
 # setup rocketsim arena
 tick_rate = 120
@@ -86,4 +88,4 @@ same_old_arena = rs.Arena.load_from_file("arena_file_path")
 arena.reset_to_random_kickoff()
 ```
 
-If you want an idea of what's included in the bindings you can either read the [source code](src/pyrocketsim.cpp) or [pydoc pyrocketsim](https://gist.github.com/uservar/95bdfef383f691181883ddb2615be443).
+If you want an idea of what's included in the bindings you can either read the [source code](src) or [pydoc pyrocketsim](https://gist.github.com/uservar/95bdfef383f691181883ddb2615be443).

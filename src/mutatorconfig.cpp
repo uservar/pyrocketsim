@@ -36,5 +36,6 @@ void init_mutatorconfig(py::module_ &m) {
         .def_readwrite("ball_hit_extra_force_scale", &MutatorConfig::ballHitExtraForceScale)
         .def_readwrite("bump_force_scale", &MutatorConfig::bumpForceScale)
         .def_readwrite("ball_radius", &MutatorConfig::ballRadius)
-        .def_readwrite("demo_mode", &MutatorConfig::demoMode);
+        .def_readwrite("demo_mode", &MutatorConfig::demoMode)
+        .def_readwrite("enable_team_demos", &MutatorConfig::enableTeamDemos);
 }

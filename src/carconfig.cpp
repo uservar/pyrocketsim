@@ -4,6 +4,8 @@
 
 namespace py = pybind11;
 
+#define CarConfigPreset(PRESET) [](py::object cls) { return CarConfig(PRESET); }
+
 
 void init_carconfig(py::module_ &m) {
 
@@ -20,6 +22,14 @@ void init_carconfig(py::module_ &m) {
         .def_readwrite("front_wheels", &CarConfig::frontWheels)
         .def_readwrite("back_wheels", &CarConfig::backWheels)
         .def_readwrite("dodge_deadzone", &CarConfig::dodgeDeadzone)
+
+        .def_property_readonly_static("OCTANE", CarConfigPreset(CAR_CONFIG_OCTANE))
+        .def_property_readonly_static("DOMINUS", CarConfigPreset(CAR_CONFIG_DOMINUS))
+        .def_property_readonly_static("PLANK", CarConfigPreset(CAR_CONFIG_PLANK))
+        .def_property_readonly_static("BREAKOUT", CarConfigPreset(CAR_CONFIG_BREAKOUT))
+        .def_property_readonly_static("HYBRID", CarConfigPreset(CAR_CONFIG_HYBRID))
+        .def_property_readonly_static("MERC", CarConfigPreset(CAR_CONFIG_MERC))
+
         .def("__copy__",  [](const CarConfig &self) {
             return CarConfig(self);
         })

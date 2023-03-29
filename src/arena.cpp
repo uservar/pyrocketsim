@@ -39,7 +39,7 @@ void init_arena(py::module_ &m) {
         .def_readonly("tick_count", &Arena::tickCount)
         .def_readonly("ball", &Arena::ball)
 
-        .def("get_boost_pads", &Arena::GetBoostPads,py::return_value_policy::reference)
+        .def("get_boost_pads", &Arena::GetBoostPads, py::return_value_policy::reference)
         .def("get_cars", &Arena::GetCars, py::return_value_policy::reference)
 
         .def("add_car", &Arena::AddCar,"team"_a, "config"_a = CAR_CONFIG_OCTANE,

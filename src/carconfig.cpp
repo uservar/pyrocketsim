@@ -2,9 +2,28 @@
 
 #include "../RocketSim/src/Sim/Car/CarConfig/CarConfig.h"
 
+
+enum class CarPreset {
+    OCTANE,
+    DOMINUS,
+    PLANK,
+    BREAKOUT,
+    HYBRID,
+    MERC,
+};
+
+CarConfig const *const carConfigPresets[] = {
+    &CAR_CONFIG_OCTANE,
+    &CAR_CONFIG_DOMINUS,
+    &CAR_CONFIG_PLANK,
+    &CAR_CONFIG_BREAKOUT,
+    &CAR_CONFIG_HYBRID,
+    &CAR_CONFIG_MERC,
+};
+
 namespace py = pybind11;
 
-#define CarConfigPreset(PRESET) [](py::object cls) { return CarConfig(PRESET); }
+#define GetCarConfigPreset(PRESET) []() { return CarConfig(PRESET); }
 
 
 void init_carconfig(py::module_ &m) {
@@ -23,12 +42,12 @@ void init_carconfig(py::module_ &m) {
         .def_readwrite("back_wheels", &CarConfig::backWheels)
         .def_readwrite("dodge_deadzone", &CarConfig::dodgeDeadzone)
 
-        .def_property_readonly_static("OCTANE", CarConfigPreset(CAR_CONFIG_OCTANE))
-        .def_property_readonly_static("DOMINUS", CarConfigPreset(CAR_CONFIG_DOMINUS))
-        .def_property_readonly_static("PLANK", CarConfigPreset(CAR_CONFIG_PLANK))
-        .def_property_readonly_static("BREAKOUT", CarConfigPreset(CAR_CONFIG_BREAKOUT))
-        .def_property_readonly_static("HYBRID", CarConfigPreset(CAR_CONFIG_HYBRID))
-        .def_property_readonly_static("MERC", CarConfigPreset(CAR_CONFIG_MERC))
+        .def_static("get_octane", GetCarConfigPreset(CAR_CONFIG_DOMINUS))
+        .def_static("get_dominus", GetCarConfigPreset(CAR_CONFIG_DOMINUS))
+        .def_static("get_plank", GetCarConfigPreset(CAR_CONFIG_PLANK))
+        .def_static("get_breakout", GetCarConfigPreset(CAR_CONFIG_BREAKOUT))
+        .def_static("get_hybrid", GetCarConfigPreset(CAR_CONFIG_HYBRID))
+        .def_static("get_merc", GetCarConfigPreset(CAR_CONFIG_MERC))
 
         .def("__copy__",  [](const CarConfig &self) {
             return CarConfig(self);
@@ -37,11 +56,12 @@ void init_carconfig(py::module_ &m) {
             return CarConfig(self);
         }, "memo"_a);
 
-    m.attr("OCTANE") = &CAR_CONFIG_OCTANE;
-    m.attr("DOMINUS") = &CAR_CONFIG_DOMINUS;
-    m.attr("PLANK") = &CAR_CONFIG_PLANK;
-    m.attr("BREAKOUT") = &CAR_CONFIG_BREAKOUT;
-    m.attr("HYBRID") = &CAR_CONFIG_HYBRID;
-    m.attr("MERC") = &CAR_CONFIG_MERC;
-
+    py::enum_<CarPreset>(m, "CarPreset")
+        .value("OCTANE", CarPreset::OCTANE)
+        .value("DOMINUS", CarPreset::DOMINUS)
+        .value("PLANK", CarPreset::PLANK)
+        .value("BREAKOUT", CarPreset::BREAKOUT)
+        .value("HYBRID", CarPreset::HYBRID)
+        .value("MERC", CarPreset::MERC)
+        .export_values();
 }

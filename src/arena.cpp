@@ -41,7 +41,15 @@ void init_arena(py::module_ &m) {
         .def("get_boost_pads", &Arena::GetBoostPads)
         .def("get_cars", &Arena::GetCars)
 
-        .def("add_car", &Arena::AddCar,"team"_a, "config"_a = CAR_CONFIG_OCTANE,
+        .def("add_car", &Arena::AddCar, "team"_a, "config"_a = CAR_CONFIG_OCTANE,
+            py::return_value_policy::reference)
+
+        .def("add_car", [](Arena &arena, Team team, uint32_t preset) {
+            if (0 <= preset && preset < 7) {
+                return arena.AddCar(team, *carConfigPresets[preset]);
+            }
+            else throw py::index_error("list index out of range");
+        }, "team"_a, "config"_a = CAR_CONFIG_OCTANE,
             py::return_value_policy::reference)
 
         .def("remove_car", &Arena::RemoveCar, "car"_a)

@@ -61,7 +61,7 @@ print("Set ball state")
 # setup rocketsim cars
 for i in range(2):
     team = rs.BLUE if i % 2 else rs.ORANGE
-    car = arena.add_car(team, rs.CarConfig.OCTANE)
+    car = arena.add_car(team, rs.OCTANE)
     car_state = car.get_state()
     car_state.boost = 100
     car_state.pos = rs.Vec(car.id * 200, car.id * 200, 200)

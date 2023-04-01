@@ -31,7 +31,7 @@ void init_mathtypes(py::module_ &m) {
         .def("dist_2d", &Vec::Dist2D, "other"_a)
         .def("normalized", &Vec::Normalized)
 
-        .def("__getitem__", [](Vec &vec, uint32_t index) {
+        .def("__getitem__", [](const Vec &vec, uint32_t index) {
             if (0 <= index && index < 3)
                 return vec[index];
             throw py::index_error("list index out of range");
@@ -99,7 +99,7 @@ void init_mathtypes(py::module_ &m) {
         .def(py::init<Vec, Vec, Vec>(), "forward"_a, "right"_a, "up"_a)
         .def_static("get_identity", &RotMat::GetIdentity)
 
-        .def("__getitem__", [](RotMat &mat, int index) {
+        .def("__getitem__", [](const RotMat &mat, int index) {
             if (0 <= index && index < 3)
                 return mat[index];
             throw py::index_error("list index out of range");

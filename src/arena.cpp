@@ -1,6 +1,5 @@
 #include <string>
 #include <filesystem>
-#include <pybind11/stl.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/functional.h>
 #include <pybind11/stl/filesystem.h>
@@ -28,10 +27,11 @@ void init_arena(py::module_ &m) {
         .export_values();
 
     py::class_<Arena>(m, "Arena")
-        .def(py::init(&Arena::Create), "game_mode"_a = GameMode::SOCCAR, "tick_rate"_a = 120)
+        .def(py::init(&Arena::Create), "game_mode"_a = GameMode::SOCCAR, "tick_rate"_a = 120,
+            py::return_value_policy::take_ownership)
         .def_readonly("game_mode", &Arena::gameMode)
 
-        .def("get_mutator_config", &Arena::GetMutatorConfig)  // creates a copy
+        .def("get_mutator_config", &Arena::GetMutatorConfig)
         .def("set_mutator_config", &Arena::SetMutatorConfig, "mutator_config"_a)
 
         .def_readonly("tick_time", &Arena::tickTime)
@@ -39,8 +39,8 @@ void init_arena(py::module_ &m) {
         .def_readonly("tick_count", &Arena::tickCount)
         .def_readonly("ball", &Arena::ball)
 
-        .def("get_boost_pads", &Arena::GetBoostPads, py::return_value_policy::reference)
-        .def("get_cars", &Arena::GetCars, py::return_value_policy::reference)
+        .def("get_boost_pads", &Arena::GetBoostPads, py::return_value_policy::reference_internal)
+        .def("get_cars", &Arena::GetCars, py::return_value_policy::reference_internal)
 
         .def("add_car", &Arena::AddCar,"team"_a, "config"_a = CAR_CONFIG_OCTANE,
             py::return_value_policy::reference)
@@ -53,10 +53,9 @@ void init_arena(py::module_ &m) {
 
         .def("write_to_file", &Arena::WriteToFile, "path"_a)
         .def_static("load_from_file", &Arena::LoadFromFile,
-            "path_str"_a, py::return_value_policy::reference)
+            "path_str"_a, py::return_value_policy::take_ownership)
 
         .def("step", &Arena::Step)
         .def("clone", &Arena::Clone, "copy_callbacks"_a)
         .def("reset_to_random_kickoff", &Arena::ResetToRandomKickoff, "seed"_a = -1);
-
 }

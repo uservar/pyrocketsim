@@ -95,4 +95,16 @@ void init_car(py::module_ &m) {
         .def_property_readonly("right_dir", &Car::GetRightDir)
         .def_property_readonly("up_dir", &Car::GetUpDir);
 
+    py::class_<std::vector<Car*>>(m, "CarVector")
+
+        .def("__len__", [](const std::vector<Car*> &vec) {
+            return vec.size();
+        })
+
+        .def("__getitem__", [](const std::vector<Car*> &vec, uint32_t index) {
+            if (0 <= index && index < vec.size())
+                return vec[index];
+            throw py::index_error("list index out of range");
+        }, py::return_value_policy::reference);
+
 }

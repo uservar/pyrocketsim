@@ -14,7 +14,24 @@ void init_ball(py::module_ &m) {
         .def_readwrite("relative_pos_on_ball", &BallHitInfo::relativePosOnBall)
         .def_readwrite("ball_pos", &BallHitInfo::ballPos)
         .def_readwrite("extra_hit_vel", &BallHitInfo::extraHitVel)
-        .def_readwrite("tick_count_when_hit", &BallHitInfo::tickCountWhenHit);
+        .def_readwrite("tick_count_when_hit", &BallHitInfo::tickCountWhenHit)
+
+        .def("__format__", [](const BallHitInfo &ballHitInfo, const char* spec) {
+            std::string format_str = "{{car_id: {1},\n relative_pos_on_ball: {2:{0}},";
+            format_str += "\n ball_pos: {3:{0}},\n extra_hit_vel: {4:{0}},\n";
+            format_str += "tick_count_when_hit: {5}}}";
+            return py::str(format_str).format(spec,
+                ballHitInfo.carID, ballHitInfo.relativePosOnBall, ballHitInfo.ballPos,
+                ballHitInfo.extraHitVel, ballHitInfo.tickCountWhenHit);
+        })
+
+        .def("__str__", [](const BallHitInfo &ballHitInfo) {
+            return py::str("{}").format(ballHitInfo);
+        })
+
+        .def("__repr__", [](const BallHitInfo &ballHitInfo) {
+            return py::str("<BallHitInfo: {}>").format(ballHitInfo);
+        });
 
     py::class_<BallState>(m, "BallState")
         .def(py::init<>())

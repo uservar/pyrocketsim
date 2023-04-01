@@ -97,6 +97,9 @@ void init_mathtypes(py::module_ &m) {
     py::class_<RotMat>(m, "RotMat")
         .def(py::init<>())
         .def(py::init<Vec, Vec, Vec>(), "forward"_a, "right"_a, "up"_a)
+        .def_readwrite("forward", &RotMat::forward)
+        .def_readwrite("right", &RotMat::right)
+        .def_readwrite("up", &RotMat::up)
         .def_static("get_identity", &RotMat::GetIdentity)
 
         .def("__getitem__", [](const RotMat &mat, int index) {

@@ -27,8 +27,7 @@ void init_arena(py::module_ &m) {
         .export_values();
 
     py::class_<Arena>(m, "Arena")
-        .def(py::init(&Arena::Create), "game_mode"_a = GameMode::SOCCAR, "tick_rate"_a = 120,
-            py::return_value_policy::take_ownership)
+        .def(py::init(&Arena::Create), "game_mode"_a = GameMode::SOCCAR, "tick_rate"_a = 120)
         .def_readonly("game_mode", &Arena::gameMode)
 
         .def("get_mutator_config", &Arena::GetMutatorConfig)
@@ -39,8 +38,8 @@ void init_arena(py::module_ &m) {
         .def_readonly("tick_count", &Arena::tickCount)
         .def_readonly("ball", &Arena::ball)
 
-        .def("get_boost_pads", &Arena::GetBoostPads, py::return_value_policy::reference_internal)
-        .def("get_cars", &Arena::GetCars, py::return_value_policy::reference_internal)
+        .def("get_boost_pads", &Arena::GetBoostPads)
+        .def("get_cars", &Arena::GetCars)
 
         .def("add_car", &Arena::AddCar,"team"_a, "config"_a = CAR_CONFIG_OCTANE,
             py::return_value_policy::reference)
@@ -52,8 +51,7 @@ void init_arena(py::module_ &m) {
         .def("set_goal_score_call_back", &ArenaSetGoalScoreCallback)  // I goofed
 
         .def("write_to_file", &Arena::WriteToFile, "path"_a)
-        .def_static("load_from_file", &Arena::LoadFromFile,
-            "path_str"_a, py::return_value_policy::take_ownership)
+        .def_static("load_from_file", &Arena::LoadFromFile)
 
         .def("step", &Arena::Step)
         .def("clone", &Arena::Clone, "copy_callbacks"_a)

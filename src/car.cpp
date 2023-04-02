@@ -71,7 +71,7 @@ void init_car(py::module_ &m) {
         
         .def_readwrite("is_demoed", &CarState::isDemoed)
         .def_readwrite("demo_respawn_timer", &CarState::demoRespawnTimer)
-        .def_readwrite("last_hit_ball_tick", &CarState::lastHitBallTick)
+        .def_readwrite("ball_hit_info", &CarState::ballHitInfo)
         
         .def_readwrite("last_controls", &CarState::lastControls);
 

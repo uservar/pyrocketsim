@@ -83,9 +83,12 @@ car_state = car.get_state()
 print(f"{car_state.last_controls = }")
 print(f"{car_state.pos = :.2f}")
 print(f"{car_state.rot_mat = :.2f}")
+print(f"{car_state.ball_hit_info = :.2f}")
 
 # there's some helper functions
 arena.set_goal_score_callback(lambda arena, team: print(f"{team} scored!"))
+arena.set_car_bump_callback(
+    lambda arena, bumper, victim, is_demo: print(f"{bumper} bumped {victim}!"))
 arena.step(100)
 
 old_arena = arena.clone(copy_callbacks=False)

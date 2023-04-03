@@ -57,11 +57,13 @@ void init_arena(py::module_ &m) {
             if (0 <= preset && preset < 7) {
                 return arena.AddCar(team, *carConfigPresets[preset]);
             }
-            else throw py::index_error("list index out of range");
+            else throw py::index_error("Unknown car preset");
         }, "team"_a, "config"_a = CAR_CONFIG_OCTANE, py::return_value_policy::reference)
 
-        .def("remove_car", &Arena::RemoveCar, "car"_a)
-        .def("get_car_from_id", &Arena::GetCarFromID, "id"_a)
+        .def("remove_car", py::overload_cast<Car*>(&Arena::RemoveCar), "car"_a)
+        .def("remove_car", py::overload_cast<uint32_t>(&Arena::RemoveCar), "id"_a)
+
+        .def("get_car", &Arena::GetCar, "id"_a)
 
         .def("set_goal_score_callback", &ArenaSetGoalScoreCallback)
         .def("set_car_bump_callback", &ArenaSetCarBumpCallback)

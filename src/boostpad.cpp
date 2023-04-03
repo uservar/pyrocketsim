@@ -23,10 +23,10 @@ void init_boostpad(py::module_ &m) {
     py::class_<BoostPad>(m, "BoostPad")
         .def_readonly("is_big", &BoostPad::isBig)
         .def_readonly("pos", &BoostPad::pos, py::return_value_policy::copy)
+        .def("get_pos", [](BoostPad &pad) {return pad.pos;})
         .def("get_state", &BoostPad::GetState)
         .def("set_state", &BoostPad::SetState, "boost_pad_state"_a);
 
-    
     py::class_<std::vector<BoostPad*>>(m, "BoostPadVector")
 
         .def("__len__", [](const std::vector<BoostPad*> &vec) {

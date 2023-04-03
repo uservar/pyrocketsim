@@ -52,16 +52,13 @@ void init_arena(py::module_ &m) {
         .def("add_car", &Arena::AddCar, "team"_a, "config"_a = CAR_CONFIG_OCTANE,
             py::return_value_policy::reference)
 
-        .def("add_car", [](Arena &arena, Team team, uint32_t preset) {
-            // overload for add_car which can take an enum/number for car preset
-            if (0 <= preset && preset < 7) {
-                return arena.AddCar(team, *carConfigPresets[preset]);
-            }
-            else throw py::index_error("Unknown car preset");
-        }, "team"_a, "config"_a = CAR_CONFIG_OCTANE, py::return_value_policy::reference)
+        .def("add_car", [](Arena &arena, Team team, uint8_t preset) {
+           // overload for add_car which can take an enum/number for car preset
+            return arena.AddCar(team, GetCarConfigFromPreset(preset));
+        }, "team"_a, "preset"_a = CarPreset::OCTANE, py::return_value_policy::reference)
 
-        .def("remove_car", py::overload_cast<Car*>(&Arena::RemoveCar), "car"_a)
         .def("remove_car", py::overload_cast<uint32_t>(&Arena::RemoveCar), "id"_a)
+        .def("remove_car", [](Arena &arena, Car &car){arena.RemoveCar(car.id);}, "car"_a)
 
         .def("get_car", &Arena::GetCar, "id"_a)
 

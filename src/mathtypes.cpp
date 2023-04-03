@@ -145,6 +145,10 @@ void init_mathtypes(py::module_ &m) {
             return py::str("<RotMat: {}>").format(mat);
         })
 
+        .def("as_angle", [](const RotMat &mat) {
+            return Angle().FromRotMat(mat);
+        })
+
         .def("as_numpy", [](const RotMat &mat) {
             py::array_t<float> arr({3, 3});
             auto buf = arr.mutable_data();

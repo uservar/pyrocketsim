@@ -60,7 +60,8 @@ void init_arena(py::module_ &m) {
         .def("remove_car", py::overload_cast<uint32_t>(&Arena::RemoveCar), "id"_a)
         .def("remove_car", py::overload_cast<Car*>(&Arena::RemoveCar), "car"_a)
 
-        .def("get_car", &Arena::GetCar, "id"_a)
+        .def("get_car", &Arena::GetCar, "id"_a, py::return_value_policy::reference)
+        .def("get_car_from_id", &Arena::GetCar, "id"_a, py::return_value_policy::reference)
 
         .def("set_goal_score_callback", &ArenaSetGoalScoreCallback)
         .def("set_car_bump_callback", &ArenaSetCarBumpCallback)

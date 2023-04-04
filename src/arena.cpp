@@ -58,7 +58,7 @@ void init_arena(py::module_ &m) {
         }, "team"_a, "preset"_a = CarPreset::OCTANE, py::return_value_policy::reference)
 
         .def("remove_car", py::overload_cast<uint32_t>(&Arena::RemoveCar), "id"_a)
-        .def("remove_car", [](Arena &arena, Car &car){arena.RemoveCar(car.id);}, "car"_a)
+        .def("remove_car", py::overload_cast<Car*>(&Arena::RemoveCar), "car"_a)
 
         .def("get_car", &Arena::GetCar, "id"_a)
 

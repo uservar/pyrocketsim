@@ -46,7 +46,7 @@ print(f"Arena tick rate: {arena.tick_rate}")
 # optional mutators, many of them are not listed here
 mutator_config = arena.get_mutator_config()
 mutator_config.ball_radius = 50
-mutator_config.boost_force = 9000
+mutator_config.boost_accel = 9000
 mutator_config.gravity = rs.Vec(0, -80, -200)
 mutator_config.demo_mode = rs.DemoMode.ON_CONTACT
 arena.set_mutator_config(mutator_config)

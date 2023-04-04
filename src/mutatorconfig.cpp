@@ -26,7 +26,7 @@ void init_mutatorconfig(py::module_ &m) {
         .def_readwrite("ball_world_restitution", &MutatorConfig::ballWorldRestitution)
         .def_readwrite("jump_accel", &MutatorConfig::jumpAccel)
         .def_readwrite("jump_immediate_force", &MutatorConfig::jumpImmediateForce)
-        .def_readwrite("boost_force", &MutatorConfig::boostForce)
+        .def_readwrite("boost_accel", &MutatorConfig::boostAccel)
         .def_readwrite("boost_used_per_second", &MutatorConfig::boostUsedPerSecond)
         .def_readwrite("respawn_delay", &MutatorConfig::respawnDelay)
         .def_readwrite("bump_cooldown_time", &MutatorConfig::bumpCooldownTime)

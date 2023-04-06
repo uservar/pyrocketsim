@@ -103,8 +103,10 @@ void init_car(py::module_ &m) {
 
         .def("__getitem__", [](const std::unordered_set<Car*> &st, uint32_t index) {
             if (0 <= index && index < st.size()) {
-                std::vector<Car*> vec(st.begin(), st.end());
-                return vec[index];
+                std::vector<Car*> sortedVec(st.begin(), st.end());
+                std::sort(sortedVec.begin(), sortedVec.end(),
+                    [](Car* self, Car* other){ return self->id < other->id; });
+                return sortedVec[index];
             }
             throw py::index_error("list index out of range");
         }, py::return_value_policy::reference);

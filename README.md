@@ -1,5 +1,9 @@
 # pyrocketsim
-Python bindings for RocketSim using pybind11
+Python bindings for RocketSim using pybind11.
+
+## Note
+As a limitation of using pybind, the compiled binaries will only work with the specific python version that was used in building them.
+I recommend using [mtheall's bindings](https://github.com/mtheall/rocketsim/tree/python-dev) instead, which don't have that limitation.
 
 ## Clone
 Make sure to clone recursively or git init/update submodules later
@@ -25,8 +29,6 @@ cmake --build ./build --config Release --parallel
 In which case, the built binaries will either be in ./build/ or ./build/Release/
 
 If you want to specify the python version, set PYBIND11_PYTHON_VERSION env variable to "3.x" or use -DPYBIND11_PYTHON_VERSION=3.x when building directly with cmake.
-
-Note: As a limitation of using pybind, the compiled binaries will only work with the specific python version that was used in building them.
 
 ## Example Usage
 

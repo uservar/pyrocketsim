@@ -1,5 +1,6 @@
 #include <string>
 #include <filesystem>
+#include <pybind11/stl.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/functional.h>
 #include <pybind11/stl/filesystem.h>
@@ -46,8 +47,15 @@ void init_arena(py::module_ &m) {
         .def_readonly("tick_count", &Arena::tickCount)
         .def_readonly("ball", &Arena::ball)
 
-        .def("get_boost_pads", &Arena::GetBoostPads)
-        .def("get_cars", &Arena::GetCars)
+        .def("get_boost_pads", &Arena::GetBoostPads, py::return_value_policy::reference)
+        .def("get_cars", [](Arena &arena) {
+            std::vector<Car*> sortedVec(arena._cars.begin(), arena._cars.end());
+            std::sort(sortedVec.begin(), sortedVec.end(),
+                [](Car* self, Car* other){ return self->id < other->id; }
+            );
+            return sortedVec;
+
+        }, py::return_value_policy::reference)
 
         .def("add_car", &Arena::AddCar, "team"_a, "config"_a = CAR_CONFIG_OCTANE,
             py::return_value_policy::reference)
